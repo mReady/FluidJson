@@ -6,18 +6,18 @@ import kotlin.reflect.KClass
 class JsonParseException(message: String, cause: Throwable) : RuntimeException(message, cause)
 
 interface JsonAdapter {
-    fun parse(string: String): JsonValue
-    fun stringify(json: JsonValue, prettyPrint: Boolean = false): String
+    fun parse(string: String): FluidJson
+    fun stringify(json: FluidJson, prettyPrint: Boolean = false): String
 
     @ExperimentalUserTypes
-    fun <T : Any> fromJson(cls: KClass<T>, json: JsonValue): T
+    fun <T : Any> fromJsonTree(cls: KClass<T>, json: FluidJson): T
 
     @ExperimentalUserTypes
-    fun toJson(value: Any?): JsonValue
+    fun toJsonTree(value: Any?): FluidJson
 }
 
 internal var defaultJsonAdapter: JsonAdapter = KotlinxJsonAdapter()
 
-fun JsonValue.Companion.setDefaultAdapter(adapter: JsonAdapter) {
+fun FluidJson.Companion.setDefaultAdapter(adapter: JsonAdapter) {
     defaultJsonAdapter = adapter
 }

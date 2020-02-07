@@ -7,6 +7,9 @@ import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
 import kotlinx.serialization.modules.getContextualOrDefault
 import net.mready.json.*
+import net.mready.json.internal.JsonEmpty
+import net.mready.json.internal.JsonNull
+import net.mready.json.internal.JsonPrimitive
 import kotlin.reflect.KClass
 
 class KotlinxJsonAdapter(private val serialModule: SerialModule = EmptyModule) : JsonAdapter {
@@ -17,7 +20,7 @@ class KotlinxJsonAdapter(private val serialModule: SerialModule = EmptyModule) :
         useArrayPolymorphism = true
     )
 
-    override fun parse(string: String): JsonValue {
+    override fun parse(string: String): FluidJson {
         val jsonString = string.trim()
         if (jsonString.isEmpty()) {
             return JsonEmpty()
@@ -28,26 +31,26 @@ class KotlinxJsonAdapter(private val serialModule: SerialModule = EmptyModule) :
         }
 
         try {
-            return Json(jsonConfiguration, serialModule).parse(JsonValueSerializer, jsonString)
+            return Json(jsonConfiguration, serialModule).parse(FluidJsonSerializer, jsonString)
         } catch (e: Throwable) {
             throw JsonParseException(e.message ?: "Unable to parse JSON", e)
         }
     }
 
-    override fun stringify(json: JsonValue, prettyPrint: Boolean): String {
+    override fun stringify(json: FluidJson, prettyPrint: Boolean): String {
         val config = jsonConfiguration.copy(prettyPrint = prettyPrint)
-        return Json(config, serialModule).stringify(JsonValueSerializer, json)
+        return Json(config, serialModule).stringify(FluidJsonSerializer, json)
     }
 
     @UseExperimental(ImplicitReflectionSerializer::class)
     @ExperimentalUserTypes
-    override fun <T : Any> fromJson(cls: KClass<T>, json: JsonValue): T {
+    override fun <T : Any> fromJsonTree(cls: KClass<T>, json: FluidJson): T {
         return Json(jsonConfiguration, serialModule).fromJson(Json.context.getContextualOrDefault(cls), json.toJsonElement())
     }
 
     @UseExperimental(ImplicitReflectionSerializer::class)
     @ExperimentalUserTypes
-    override fun toJson(value: Any?): JsonValue {
-        return value?.let { JsonValue.from(Json(jsonConfiguration, serialModule).toJson(value)) } ?: JsonNull()
+    override fun toJsonTree(value: Any?): FluidJson {
+        return value?.let { FluidJson.from(Json(jsonConfiguration, serialModule).toJson(value)) } ?: JsonNull()
     }
 }

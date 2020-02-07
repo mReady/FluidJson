@@ -1,32 +1,39 @@
 package net.mready.json
 
+import net.mready.json.internal.*
 import kotlin.reflect.KClass
 
 @Experimental
 annotation class ExperimentalUserTypes
 
 @ExperimentalUserTypes
-inline fun <reified T : Any> JsonAdapter.fromJson(json: JsonValue): T = fromJson(T::class, json)
+inline fun <reified T : Any> JsonAdapter.fromJsonTree(json: FluidJson): T = fromJsonTree(T::class, json)
 
 @ExperimentalUserTypes
-fun JsonValue.Companion.wrap(value: Any?): JsonValue = jsonNullOr(value, JsonPath.ROOT) { JsonReference(it) }
+fun FluidJson.Companion.wrap(value: Any?): FluidJson =
+    jsonNullOr(value, JsonPath.ROOT) {
+        JsonReference(it)
+    }
 
 @ExperimentalUserTypes
-inline fun <reified T: Any> JsonValue.valueOrNull(): T? = valueOrNull(T::class)
+inline fun <reified T: Any> FluidJson.valueOrNull(): T? = valueOrNull(T::class)
 
 @ExperimentalUserTypes
-inline fun <reified T: Any> JsonValue.value(): T = value(T::class)
+inline fun <reified T: Any> FluidJson.value(): T = value(T::class)
 
 @Suppress("UNCHECKED_CAST")
 @ExperimentalUserTypes
-fun <T: Any> JsonValue.valueOrNull(cls: KClass<T>): T? = when(this) {
-    is JsonNull -> null
-    is JsonError -> null
-    is JsonReference -> content as? T
-    is JsonArray, is JsonObject, is JsonPrimitive -> defaultJsonAdapter.fromJson(cls, this)
-    is JsonEmpty -> wrapped?.valueOrNull(cls)
+fun <T: Any> FluidJson.valueOrNull(cls: KClass<T>): T? {
+    if (this !is JsonElement) throw AssertionError()
+    return when(this) {
+        is JsonNull -> null
+        is JsonError -> null
+        is JsonReference -> content as? T
+        is JsonArray, is JsonObject, is JsonPrimitive -> defaultJsonAdapter.fromJsonTree(cls, this)
+        is JsonEmpty -> wrapped?.valueOrNull(cls)
+    }
 }
 
 @ExperimentalUserTypes
-fun <T: Any> JsonValue.value(cls: KClass<T>): T = valueOrNull(cls) ?: throwInvalidType(cls.simpleName.orEmpty())
+fun <T: Any> FluidJson.value(cls: KClass<T>): T = valueOrNull(cls) ?: (this as JsonElement).throwInvalidType(cls.simpleName.orEmpty())
 

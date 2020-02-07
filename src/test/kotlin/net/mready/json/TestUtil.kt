@@ -6,7 +6,7 @@ import kotlin.test.assertFailsWith
 const val PATH_ROOT = "[root]"
 
 inline fun assertFailsOn(vararg path: String, block: () -> Unit) {
-    val e = assertFailsWith(JsonValueException::class, null, block)
+    val e = assertFailsWith(FluidJsonException::class, null, block)
     assertEquals(path.joinToString(" > "), e.path.toString())
 }
 

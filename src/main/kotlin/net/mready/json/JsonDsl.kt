@@ -2,32 +2,35 @@
 
 package net.mready.json
 
+import net.mready.json.internal.JsonArray
+import net.mready.json.internal.JsonObject
+
 
 @DslMarker
 annotation class JsonDslMarker
 
-inline fun jsonObject(block: JsonObjectDsl.() -> Unit): JsonValue {
+inline fun jsonObject(block: JsonObjectDsl.() -> Unit): FluidJson {
     return JsonObjectDsl().apply(block).build()
 }
 
-inline fun jsonArray(block: JsonArrayDsl.() -> Unit): JsonValue {
+inline fun jsonArray(block: JsonArrayDsl.() -> Unit): FluidJson {
     return JsonArrayDsl().apply(block).build()
 }
 
 @JsonDslMarker
 open class JsonDsl(@PublishedApi internal val path: JsonPath = JsonPath.ROOT) {
-    inline fun jsonArray(block: JsonArrayDsl.() -> Unit): JsonValue {
+    inline fun jsonArray(block: JsonArrayDsl.() -> Unit): FluidJson {
         return JsonArrayDsl(path).apply(block).build()
     }
 
-    inline fun jsonObject(block: JsonObjectDsl.() -> Unit): JsonValue {
+    inline fun jsonObject(block: JsonObjectDsl.() -> Unit): FluidJson {
         return JsonObjectDsl(path).apply(block).build()
     }
 }
 
 @JsonDslMarker
 class JsonObjectDsl(path: JsonPath = JsonPath.ROOT) : JsonDsl(path) {
-    val obj: JsonValue = JsonObject(mutableMapOf(), path)
+    val obj: FluidJson = JsonObject(mutableMapOf(), path)
 
     infix fun String.value(value: Nothing?) {
         obj[this] = null
@@ -45,7 +48,7 @@ class JsonObjectDsl(path: JsonPath = JsonPath.ROOT) : JsonDsl(path) {
         obj[this] = value
     }
 
-    infix fun String.value(value: JsonValue?) {
+    infix fun String.value(value: FluidJson?) {
         obj[this] = value
     }
 
@@ -58,14 +61,14 @@ class JsonObjectDsl(path: JsonPath = JsonPath.ROOT) : JsonDsl(path) {
     }
 
     @PublishedApi
-    internal fun build(): JsonValue {
+    internal fun build(): FluidJson {
         return obj
     }
 }
 
 @JsonDslMarker
 class JsonArrayDsl(path: JsonPath = JsonPath.ROOT) : JsonDsl(path) {
-    val array: JsonValue = JsonArray(mutableListOf(), path)
+    val array: FluidJson = JsonArray(mutableListOf(), path)
 
     fun emit(value: Nothing?) {
         array += null
@@ -83,16 +86,16 @@ class JsonArrayDsl(path: JsonPath = JsonPath.ROOT) : JsonDsl(path) {
         array += value
     }
 
-    fun emit(value: JsonValue?) {
+    fun emit(value: FluidJson?) {
         array += value
     }
 
-    inline fun <T> Collection<T>.emitEach(block: (T) -> JsonValue) {
+    inline fun <T> Collection<T>.emitEach(block: (T) -> FluidJson) {
         forEach { emit(block(it)) }
     }
 
     @PublishedApi
-    internal fun build(): JsonValue {
+    internal fun build(): FluidJson {
         return array
     }
 }

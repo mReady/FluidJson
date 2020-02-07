@@ -1,5 +1,6 @@
 package net.mready.json
 
+import net.mready.json.internal.*
 import net.mready.json.kotlinx.KotlinxJsonAdapter
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -10,7 +11,7 @@ class JsonTypesTests {
 
     @Test
     fun emptyJson() {
-        val json = JsonValue()
+        val json = FluidJson()
 
         assertTrue { json is JsonEmpty }
         assertEquals(true, json.isNull)
@@ -36,7 +37,7 @@ class JsonTypesTests {
 
     @Test
     fun nullJson() {
-        val json = JsonValue(null)
+        val json = FluidJson(null)
 
         assertTrue { json is JsonNull }
         assertEquals(true, json.isNull)
@@ -64,7 +65,8 @@ class JsonTypesTests {
 
     @Test
     fun errorJson() {
-        val json: JsonValue = JsonError(JsonValueException("test", JsonPath.ROOT))
+        val json: FluidJson =
+            JsonError(FluidJsonException("test", JsonPath.ROOT))
 
         assertTrue { json is JsonError }
         assertEquals(true, json.isNull)
@@ -93,7 +95,7 @@ class JsonTypesTests {
     @Test
     fun stringJson() {
         val string = "test"
-        val json = JsonValue(string)
+        val json = FluidJson(string)
 
         assertTrue { json is JsonPrimitive }
         assertEquals(false, json.isNull)
@@ -122,7 +124,7 @@ class JsonTypesTests {
     @Test
     fun intJson() {
         val number = 1
-        val json = JsonValue(number)
+        val json = FluidJson(number)
 
         assertTrue { json is JsonPrimitive }
         assertEquals(false, json.isNull)
@@ -151,7 +153,7 @@ class JsonTypesTests {
     @Test
     fun longJson() {
         val number = 1L
-        val json = JsonValue(number)
+        val json = FluidJson(number)
 
         assertTrue { json is JsonPrimitive }
         assertEquals(false, json.isNull)
@@ -180,7 +182,7 @@ class JsonTypesTests {
     @Test
     fun doubleJson() {
         val number = 1.0
-        val json = JsonValue(number)
+        val json = FluidJson(number)
 
         assertTrue { json is JsonPrimitive }
         assertEquals(false, json.isNull)

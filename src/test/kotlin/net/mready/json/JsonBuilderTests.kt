@@ -2,7 +2,6 @@ package net.mready.json
 
 import net.mready.json.kotlinx.KotlinxJsonAdapter
 import org.junit.Test
-import org.junit.runners.Parameterized
 import kotlin.test.assertEquals
 
 class JsonBuilderTests {

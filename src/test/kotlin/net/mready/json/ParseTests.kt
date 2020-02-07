@@ -1,5 +1,9 @@
 package net.mready.json
 
+import net.mready.json.internal.JsonArray
+import net.mready.json.internal.JsonEmpty
+import net.mready.json.internal.JsonObject
+import net.mready.json.internal.JsonPrimitive
 import net.mready.json.kotlinx.KotlinxJsonAdapter
 import org.intellij.lang.annotations.Language
 import org.junit.Test
@@ -104,7 +108,7 @@ class ParseTests {
 
         assertTrue { json is JsonObject }
         assertEquals(2, json.size)
-        assertEquals(mapOf("a" to "b", "c" to "d"), json.obj.mapValues { it.value.string })
+        assertEquals(mapOf<String, String>("a" to "b", "c" to "d"), json.obj.mapValues { it.value.string })
     }
 
     @Test

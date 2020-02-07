@@ -1,5 +1,6 @@
 package net.mready.json
 
+import net.mready.json.internal.*
 import net.mready.json.kotlinx.KotlinxJsonAdapter
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -12,7 +13,7 @@ class MutationTests {
 
     @Test
     fun objectFromEmpty() {
-        val json = JsonValue()
+        val json = FluidJson()
         json["null"] = null
         json["string"] = "string"
         json["int"] = 1
@@ -43,7 +44,7 @@ class MutationTests {
         assertEquals(listOf(1, 2, 3), json["array"].array.map { it.int })
 
         assertTrue { json["obj"] is JsonObject }
-        assertEquals(mapOf("a" to 1), json["obj"].obj.mapValues { it.value.int })
+        assertEquals(mapOf<String, Int>("a" to 1), json["obj"].obj.mapValues { it.value.int })
 
         assertEquals("""{"null":null,"string":"string","int":1,"long":1,"double":1.0,"bool":true,"array":[1,2,3],"obj":{"a":1}}""", adapter.stringify(json))
     }
@@ -88,7 +89,7 @@ class MutationTests {
 
     @Test
     fun fillInArrayValues() {
-        val json = JsonValue()
+        val json = FluidJson()
         json[5] = 5
         json.array.take(5).forEach {
             assertNull(it.orNull)
@@ -130,7 +131,7 @@ class MutationTests {
 
     @Test
     fun jsonSetterOperators() {
-        val json = JsonValue()
+        val json = FluidJson()
         json["null"] = null
         json["hello"] = 123
         json["obj"]["sub"] = "1234"

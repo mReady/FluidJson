@@ -2,10 +2,10 @@ package net.mready.json.kotlinx
 
 import kotlinx.serialization.*
 import kotlinx.serialization.internal.*
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonInput
 import kotlinx.serialization.modules.getContextualOrDefault
 import net.mready.json.*
+import net.mready.json.internal.*
 
 private typealias KJsonElement = kotlinx.serialization.json.JsonElement
 private typealias KJsonNull = kotlinx.serialization.json.JsonNull
@@ -13,11 +13,12 @@ private typealias KJsonLiteral = kotlinx.serialization.json.JsonLiteral
 private typealias KJsonObject = kotlinx.serialization.json.JsonObject
 private typealias KJsonArray = kotlinx.serialization.json.JsonArray
 
-fun JsonValue.Companion.from(jsonElement: KJsonElement): JsonValue = fromJsonElement(jsonElement)
-fun JsonValue.toJsonElement(): JsonElement = toJsonElement(this)
+fun FluidJson.Companion.from(jsonElement: KJsonElement): FluidJson = fromJsonElement(jsonElement)
+fun FluidJson.toJsonElement(): KJsonElement = toJsonElement(this)
 
 @JvmName("convertToJsonElement")
-private fun toJsonElement(value: JsonValue): JsonElement {
+private fun toJsonElement(value: FluidJson): KJsonElement {
+    if (value !is JsonElement) throw AssertionError()
     return when (value) {
         is JsonNull -> KJsonNull
         is JsonPrimitive -> when {
@@ -39,7 +40,7 @@ private fun toJsonElement(value: JsonValue): JsonElement {
     }
 }
 
-private fun fromJsonElement(element: KJsonElement, path: JsonPath = JsonPath.ROOT): JsonValue {
+private fun fromJsonElement(element: KJsonElement, path: JsonPath = JsonPath.ROOT): FluidJson {
     return when (element) {
         is KJsonObject -> {
             val content = element.content.mapValuesTo(mutableMapOf()) {
@@ -56,20 +57,22 @@ private fun fromJsonElement(element: KJsonElement, path: JsonPath = JsonPath.ROO
         is KJsonNull -> JsonNull(path)
         is KJsonLiteral -> JsonPrimitive(
             content = element.content,
-            type = if (element.isString) JsonPrimitive.Type.STRING else JsonPrimitive.Type.UNKNOWN,
+            type = if (element.isString) JsonPrimitive.Type
+                .STRING else JsonPrimitive.Type.UNKNOWN,
             path = path
         )
     }
 }
 
-@Serializer(forClass = JsonValue::class)
-object JsonValueSerializer : KSerializer<JsonValue> {
-    override val descriptor: SerialDescriptor = object : SerialClassDescImpl("JsonValueSerializer") {
+@Serializer(forClass = FluidJson::class)
+object FluidJsonSerializer : KSerializer<FluidJson> {
+    override val descriptor: SerialDescriptor = object : SerialClassDescImpl("FluidJson") {
         override val kind: SerialKind get() = PolymorphicKind.SEALED
     }
 
     @UseExperimental(ImplicitReflectionSerializer::class)
-    override fun serialize(encoder: Encoder, obj: JsonValue) {
+    override fun serialize(encoder: Encoder, obj: FluidJson) {
+        if (obj !is JsonElement) throw AssertionError()
         when (obj) {
             is JsonPrimitive -> encoder.encodeSerializableValue(JsonPrimitiveSerializer, obj)
             is JsonObject -> encoder.encodeSerializableValue(JsonObjectSerializer, obj)
@@ -88,7 +91,7 @@ object JsonValueSerializer : KSerializer<JsonValue> {
         }
     }
 
-    override fun deserialize(decoder: Decoder): JsonValue {
+    override fun deserialize(decoder: Decoder): FluidJson {
         val input = decoder as JsonInput
         return fromJsonElement(input.decodeJson())
     }
@@ -98,16 +101,16 @@ private object JsonObjectSerializer : KSerializer<JsonObject> {
     override val descriptor: SerialDescriptor =
         NamedMapClassDescriptor(
             "JsonObject", StringSerializer.descriptor,
-            JsonValueSerializer.descriptor
+            FluidJsonSerializer.descriptor
         )
 
     override fun serialize(encoder: Encoder, obj: JsonObject) {
-        LinkedHashMapSerializer(StringSerializer, JsonValueSerializer).serialize(encoder, obj.content)
+        LinkedHashMapSerializer(StringSerializer, FluidJsonSerializer).serialize(encoder, obj.content)
     }
 
     override fun deserialize(decoder: Decoder): JsonObject {
         return JsonObject(
-            LinkedHashMapSerializer(StringSerializer, JsonValueSerializer)
+            LinkedHashMapSerializer(StringSerializer, FluidJsonSerializer)
                 .deserialize(decoder)
                 .toMutableMap()
         )
@@ -116,15 +119,15 @@ private object JsonObjectSerializer : KSerializer<JsonObject> {
 
 private object JsonArraySerializer : KSerializer<JsonArray> {
     override val descriptor: SerialDescriptor =
-        NamedListClassDescriptor("JsonArray", JsonValueSerializer.descriptor)
+        NamedListClassDescriptor("JsonArray", FluidJsonSerializer.descriptor)
 
     override fun serialize(encoder: Encoder, obj: JsonArray) {
-        ArrayListSerializer(JsonValueSerializer).serialize(encoder, obj.content)
+        ArrayListSerializer(FluidJsonSerializer).serialize(encoder, obj.content)
     }
 
     override fun deserialize(decoder: Decoder): JsonArray {
         return JsonArray(
-            ArrayListSerializer(JsonValueSerializer).deserialize(
+            ArrayListSerializer(FluidJsonSerializer).deserialize(
                 decoder
             ).toMutableList()
         )
