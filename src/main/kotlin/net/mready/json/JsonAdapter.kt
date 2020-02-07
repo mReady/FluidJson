@@ -1,6 +1,6 @@
 package net.mready.json
 
-import net.mready.json.kotlinx.KotlinxJsonAdapter
+import net.mready.json.adapters.KotlinxJsonAdapter
 import kotlin.reflect.KClass
 
 class JsonParseException(message: String, cause: Throwable) : RuntimeException(message, cause)

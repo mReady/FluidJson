@@ -4,7 +4,7 @@ import net.mready.json.internal.JsonArray
 import net.mready.json.internal.JsonEmpty
 import net.mready.json.internal.JsonObject
 import net.mready.json.internal.JsonPrimitive
-import net.mready.json.kotlinx.KotlinxJsonAdapter
+import net.mready.json.adapters.KotlinxJsonAdapter
 import org.intellij.lang.annotations.Language
 import org.junit.Test
 import kotlin.test.assertEquals

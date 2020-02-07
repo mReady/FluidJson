@@ -1,6 +1,6 @@
 package net.mready.json
 
-import net.mready.json.kotlinx.KotlinxJsonAdapter
+import net.mready.json.adapters.KotlinxJsonAdapter
 import org.junit.Test
 import kotlin.test.assertEquals
 

@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 import net.mready.json.internal.JsonEmpty
 import net.mready.json.internal.JsonNull
 import net.mready.json.internal.wrapValue
-import net.mready.json.kotlinx.FluidJsonSerializer
+import net.mready.json.adapters.FluidJsonSerializer
 
 class FluidJsonException(
     message: String,

@@ -1,4 +1,4 @@
-package net.mready.json.kotlinx
+package net.mready.json.adapters
 
 import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlinx.serialization.json.Json

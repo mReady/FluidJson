@@ -1,4 +1,4 @@
-package net.mready.json.kotlinx
+package net.mready.json.adapters
 
 import kotlinx.serialization.*
 import kotlinx.serialization.internal.*
