@@ -20,9 +20,9 @@ abstract class FluidJson internal constructor(internal val path: JsonPath, inter
     companion object {
         fun parse(string: String, adapter: JsonAdapter = defaultJsonAdapter) = adapter.parse(string)
 
-        operator fun invoke(adapter: JsonAdapter = defaultJsonAdapter): FluidJson = JsonEmpty(JsonPath.ROOT, adapter)
+        operator fun invoke(adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
+            JsonEmpty(JsonPath.ROOT, adapter)
 
-        @Suppress("UNUSED_PARAMETER")
         operator fun invoke(value: Nothing?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
             JsonNull(JsonPath.ROOT, adapter)
 

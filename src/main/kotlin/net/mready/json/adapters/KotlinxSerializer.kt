@@ -4,9 +4,9 @@ import kotlinx.serialization.*
 import kotlinx.serialization.internal.*
 import kotlinx.serialization.json.JsonInput
 import kotlinx.serialization.modules.getContextualOrDefault
+import net.mready.json.ExperimentalUserTypes
 import net.mready.json.FluidJson
 import net.mready.json.JsonAdapter
-import net.mready.json.internal.JsonPath
 import net.mready.json.defaultJsonAdapter
 import net.mready.json.internal.*
 
@@ -19,6 +19,7 @@ private typealias KJsonArray = kotlinx.serialization.json.JsonArray
 fun FluidJson.Companion.from(jsonElement: KJsonElement): FluidJson = fromJsonElement(jsonElement)
 fun FluidJson.toJsonElement(): KJsonElement = toJsonElement(this)
 
+@UseExperimental(ExperimentalUserTypes::class)
 @JvmName("convertToJsonElement")
 private fun toJsonElement(value: FluidJson): KJsonElement {
     if (value !is JsonElement) throw AssertionError()
@@ -38,7 +39,10 @@ private fun toJsonElement(value: FluidJson): KJsonElement {
         is JsonEmpty -> value.wrapped?.let {
             toJsonElement(it)
         } ?: KJsonNull
-        is JsonReference -> TODO()
+        is JsonReference -> value.select(
+            valueTransform = { toJsonElement(value.adapter.toJsonTree(it)) },
+            jsonTransform = { toJsonElement(it) }
+        )
         is JsonError -> TODO()
     }
 }
@@ -107,9 +111,13 @@ object FluidJsonSerialization : SerializationStrategy<FluidJson> {
             is JsonObject -> encoder.encodeSerializableValue(JsonObjectSerializer, obj)
             is JsonArray -> encoder.encodeSerializableValue(JsonArraySerializer, obj)
             is JsonNull -> encoder.encodeSerializableValue(JsonNullSerializer, obj)
-            is JsonReference -> encoder.encodeSerializableValue(
-                encoder.context.getContextualOrDefault(obj.content),
-                obj.content
+            is JsonReference -> obj.select(
+                valueTransform = {
+                    encoder.encodeSerializableValue(encoder.context.getContextualOrDefault(it), it)
+                },
+                jsonTransform = {
+                    serialize(encoder, it)
+                }
             )
             is JsonEmpty -> obj.wrapped?.let {
                 serialize(encoder, it)

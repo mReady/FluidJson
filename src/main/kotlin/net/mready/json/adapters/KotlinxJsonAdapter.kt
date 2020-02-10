@@ -6,7 +6,10 @@ import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
 import kotlinx.serialization.modules.getContextualOrDefault
-import net.mready.json.*
+import net.mready.json.ExperimentalUserTypes
+import net.mready.json.FluidJson
+import net.mready.json.JsonAdapter
+import net.mready.json.JsonParseException
 import net.mready.json.internal.JsonEmpty
 import net.mready.json.internal.JsonNull
 import net.mready.json.internal.JsonPath
@@ -58,7 +61,11 @@ class KotlinxJsonAdapter(private val serialModule: SerialModule = EmptyModule) :
     @UseExperimental(ImplicitReflectionSerializer::class)
     @ExperimentalUserTypes
     override fun toJsonTree(value: Any?): FluidJson {
-        return value?.let { FluidJson.from(Json(jsonConfiguration, serialModule).toJson(value)) }
-            ?: JsonNull(adapter = this)
+        return value?.let {
+            val serializer = Json.context.getContextualOrDefault(value)
+            FluidJson.from(
+                Json(jsonConfiguration, serialModule).toJson(serializer, value)
+            )
+        } ?: JsonNull(adapter = this)
     }
 }

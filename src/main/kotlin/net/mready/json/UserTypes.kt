@@ -10,30 +10,34 @@ annotation class ExperimentalUserTypes
 inline fun <reified T : Any> JsonAdapter.fromJsonTree(json: FluidJson): T = fromJsonTree(T::class, json)
 
 @ExperimentalUserTypes
-fun FluidJson.Companion.wrap(value: Any?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-    jsonNullOr(value, JsonPath.ROOT, adapter) {
+fun FluidJson.Companion.wrap(value: Any?, path: JsonPath = JsonPath.ROOT, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
+    jsonNullOr(value, path, adapter) {
         JsonReference(it, adapter = adapter)
     }
 
 @ExperimentalUserTypes
-inline fun <reified T: Any> FluidJson.valueOrNull(): T? = valueOrNull(T::class)
+inline fun <reified T : Any> FluidJson.valueOrNull(): T? = valueOrNull(T::class)
 
 @ExperimentalUserTypes
-inline fun <reified T: Any> FluidJson.value(): T = value(T::class)
+inline fun <reified T : Any> FluidJson.value(): T = value(T::class)
 
 @Suppress("UNCHECKED_CAST")
 @ExperimentalUserTypes
-fun <T: Any> FluidJson.valueOrNull(cls: KClass<T>): T? {
+fun <T : Any> FluidJson.valueOrNull(cls: KClass<T>): T? {
     if (this !is JsonElement) throw AssertionError()
-    return when(this) {
+    return when (this) {
         is JsonNull -> null
         is JsonError -> null
-        is JsonReference -> content as? T
+        is JsonReference -> select(
+            valueTransform = { it as? T },
+            jsonTransform = { adapter.fromJsonTree(cls, it) }
+        )
         is JsonArray, is JsonObject, is JsonPrimitive -> adapter.fromJsonTree(cls, this)
         is JsonEmpty -> wrapped?.valueOrNull(cls)
     }
 }
 
 @ExperimentalUserTypes
-fun <T: Any> FluidJson.value(cls: KClass<T>): T = valueOrNull(cls) ?: (this as JsonElement).throwInvalidType(cls.simpleName.orEmpty())
+fun <T : Any> FluidJson.value(cls: KClass<T>): T =
+    valueOrNull(cls) ?: (this as JsonElement).throwInvalidType(cls.simpleName.orEmpty())
 
