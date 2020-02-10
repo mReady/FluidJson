@@ -3,11 +3,11 @@
 package net.mready.json.internal
 
 import net.mready.json.FluidJson
-import net.mready.json.JsonPath
 import net.mready.json.FluidJsonException
+import net.mready.json.JsonAdapter
 
 
-sealed class JsonElement(path: JsonPath) : FluidJson(path) {
+sealed class JsonElement(path: JsonPath, adapter: JsonAdapter) : FluidJson(path, adapter) {
     abstract val elementName: String
 
     protected inline fun throwError(e: FluidJsonException): Nothing {
@@ -18,17 +18,27 @@ sealed class JsonElement(path: JsonPath) : FluidJson(path) {
         throw FluidJsonException("Element $elementName is not $expected", path)
     }
 
+    override fun copyIfNeeded(path: JsonPath, adapter: JsonAdapter): FluidJson {
+        return if (path != this.path || adapter != this.adapter) {
+            copy(path, adapter)
+        } else {
+            this
+        }
+    }
+
     override operator fun get(key: String): FluidJson {
         return JsonError(
             e = FluidJsonException("Element $elementName is not an object", path),
-            path = path + key
+            path = path + key,
+            adapter = adapter
         )
     }
 
     override operator fun get(index: Int): FluidJson {
         return JsonError(
             e = FluidJsonException("Element $elementName is not an array", path),
-            path = path + index
+            path = path + index,
+            adapter = adapter
         )
     }
 
@@ -64,10 +74,10 @@ sealed class JsonElement(path: JsonPath) : FluidJson(path) {
 }
 
 
-class JsonNull(path: JsonPath = JsonPath.ROOT) : JsonElement(path) {
+class JsonNull(path: JsonPath = JsonPath.ROOT, adapter: JsonAdapter) : JsonElement(path, adapter) {
     override val elementName = "null"
 
-    override fun copyWithPath(path: JsonPath) = JsonNull(path)
+    override fun copy(path: JsonPath, adapter: JsonAdapter) = JsonNull(path, adapter)
 
     override val isNull: Boolean get() = true
     override val orNull: JsonElement? get() = null
@@ -75,20 +85,22 @@ class JsonNull(path: JsonPath = JsonPath.ROOT) : JsonElement(path) {
 
 class JsonObject(
     internal val content: MutableMap<String, FluidJson>,
-    path: JsonPath = JsonPath.ROOT
-) : JsonElement(path) {
+    path: JsonPath = JsonPath.ROOT,
+    adapter: JsonAdapter
+) : JsonElement(path, adapter) {
     override val elementName = "object"
 
-    override fun copyWithPath(path: JsonPath) = JsonObject(
-        content = content.mapValuesTo(mutableMapOf()) { it.value.copyWithPath(path + it.key) },
-        path = path
+    override fun copy(path: JsonPath, adapter: JsonAdapter) = JsonObject(
+        content = content.mapValuesTo(mutableMapOf()) { it.value.copy(path + it.key, adapter) },
+        path = path,
+        adapter = adapter
     )
 
     override val size: Int get() = content.size
 
     override operator fun get(key: String): FluidJson {
         return content.getOrPut(key) {
-            JsonEmpty(path + key) {
+            JsonEmpty(path + key, adapter) {
                 FluidJsonException("No such key \"$key\" in object", path)
             }
         }
@@ -96,13 +108,7 @@ class JsonObject(
 
     override operator fun set(key: String, value: FluidJson?) {
         val childPath = path + key
-        content[key] = jsonNullOr(value, childPath) {
-            if (it.path == childPath) {
-                it
-            } else {
-                it.copyWithPath(childPath)
-            }
-        }
+        content[key] = jsonNullOr(value, childPath, adapter) { it.copyIfNeeded(childPath, adapter) }
     }
 
     override val objOrNull: Map<String, FluidJson>? get() = content
@@ -110,13 +116,15 @@ class JsonObject(
 
 class JsonArray(
     internal val content: MutableList<FluidJson>,
-    path: JsonPath = JsonPath.ROOT
-) : JsonElement(path) {
+    path: JsonPath = JsonPath.ROOT,
+    adapter: JsonAdapter
+) : JsonElement(path, adapter) {
     override val elementName = "array"
 
-    override fun copyWithPath(path: JsonPath) = JsonArray(
-        content = content.mapIndexedTo(mutableListOf()) { index, item -> item.copyWithPath(path + index) },
-        path = path
+    override fun copy(path: JsonPath, adapter: JsonAdapter) = JsonArray(
+        content = content.mapIndexedTo(mutableListOf()) { index, item -> item.copy(path + index, adapter) },
+        path = path,
+        adapter = adapter
     )
 
     override val size: Int get() = content.size
@@ -128,7 +136,7 @@ class JsonArray(
             )
             index >= content.size -> {
                 for (i in content.size..index) {
-                    content.add(JsonEmpty(path + i) {
+                    content.add(JsonEmpty(path + i, adapter) {
                         FluidJsonException("Index $index out of bounds (size: ${content.size})", path)
                     })
                 }
@@ -139,7 +147,7 @@ class JsonArray(
 
     override operator fun set(index: Int, value: FluidJson?) {
         val childPath = path + index
-        val newValue = jsonNullOr(value, path) { if (it.path == childPath) it else it.copyWithPath(childPath) }
+        val newValue = jsonNullOr(value, childPath, adapter) { it.copyIfNeeded(childPath, adapter) }
 
         when {
             index < 0 -> throwError(
@@ -148,7 +156,7 @@ class JsonArray(
             index < content.size -> content[index] = newValue
             else -> {
                 for (i in content.size until index) {
-                    content.add(JsonEmpty(path + i))
+                    content.add(JsonEmpty(path + i, adapter))
                 }
                 content.add(newValue)
             }
@@ -165,8 +173,9 @@ class JsonArray(
 class JsonPrimitive(
     internal val content: String,
     internal val type: Type,
-    path: JsonPath = JsonPath.ROOT
-) : JsonElement(path) {
+    path: JsonPath = JsonPath.ROOT,
+    adapter: JsonAdapter
+) : JsonElement(path, adapter) {
     override val elementName: String
         get() = when {
             isBool() -> "bool"
@@ -175,7 +184,7 @@ class JsonPrimitive(
             else -> "unknown"
         }
 
-    override fun copyWithPath(path: JsonPath) = JsonPrimitive(content, type, path)
+    override fun copy(path: JsonPath, adapter: JsonAdapter) = JsonPrimitive(content, type, path, adapter)
 
     enum class Type {
         STRING, NUMBER, BOOLEAN, UNKNOWN
@@ -236,21 +245,25 @@ class JsonPrimitive(
 }
 
 class JsonReference(
-    internal val content: Any, path: JsonPath = JsonPath.ROOT
-) : JsonElement(path) {
+    internal val content: Any,
+    path: JsonPath = JsonPath.ROOT,
+    adapter: JsonAdapter
+) : JsonElement(path, adapter) {
     override val elementName: String
         get() = content::class.simpleName ?: "reference"
 
-    override fun copyWithPath(path: JsonPath) = JsonReference(content, path)
+    override fun copy(path: JsonPath, adapter: JsonAdapter) = JsonReference(content, path, adapter)
 }
 
 class JsonError(
-    private val e: FluidJsonException, path: JsonPath = JsonPath.ROOT
-) : JsonElement(path) {
+    private val e: FluidJsonException,
+    path: JsonPath = JsonPath.ROOT,
+    adapter: JsonAdapter
+) : JsonElement(path, adapter) {
     override val elementName: String
         get() = "error (${e.message})"
 
-    override fun copyWithPath(path: JsonPath) = JsonError(e, path)
+    override fun copy(path: JsonPath, adapter: JsonAdapter) = JsonError(e, path, adapter)
 
     override operator fun get(key: String) = this
     override operator fun get(index: Int) = this
@@ -269,8 +282,9 @@ class JsonError(
 
 class JsonEmpty(
     path: JsonPath = JsonPath.ROOT,
+    adapter: JsonAdapter,
     private val pendingException: (() -> FluidJsonException)? = null
-) : JsonElement(path) {
+) : JsonElement(path, adapter) {
     override val elementName: String
         get() = (wrapped as? JsonElement)?.elementName ?: "null"
 
@@ -278,13 +292,13 @@ class JsonEmpty(
     internal var wrapped: FluidJson? = null
     private inline val defaultException get() = FluidJsonException("Json element is empty", path)
 
-    override fun copyWithPath(path: JsonPath) = wrapped?.copyWithPath(path) ?: JsonEmpty(path, pendingException)
+    override fun copy(path: JsonPath, adapter: JsonAdapter) = wrapped?.copy(path, adapter) ?: JsonEmpty(path, adapter, pendingException)
 
     override val size: Int get() = wrapped?.size ?: 0
 
     private fun materializeAsObject(): FluidJson {
         if (wrapped == null) {
-            wrapped = JsonObject(mutableMapOf(), path)
+            wrapped = JsonObject(mutableMapOf(), path, adapter)
         } else if (wrapped !is JsonObject) {
             throwInvalidType("object")
         }
@@ -294,7 +308,7 @@ class JsonEmpty(
 
     private fun materializeAsArray(): FluidJson {
         if (wrapped == null) {
-            wrapped = JsonArray(mutableListOf(), path)
+            wrapped = JsonArray(mutableListOf(), path, adapter)
         } else if (wrapped !is JsonArray) {
             throwInvalidType("array")
         }

@@ -65,8 +65,7 @@ class JsonTypesTests {
 
     @Test
     fun errorJson() {
-        val json: FluidJson =
-            JsonError(FluidJsonException("test", JsonPath.ROOT))
+        val json: FluidJson = JsonError(FluidJsonException("test", JsonPath.ROOT), adapter = adapter)
 
         assertTrue { json is JsonError }
         assertEquals(true, json.isNull)

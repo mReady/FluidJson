@@ -10,9 +10,9 @@ annotation class ExperimentalUserTypes
 inline fun <reified T : Any> JsonAdapter.fromJsonTree(json: FluidJson): T = fromJsonTree(T::class, json)
 
 @ExperimentalUserTypes
-fun FluidJson.Companion.wrap(value: Any?): FluidJson =
-    jsonNullOr(value, JsonPath.ROOT) {
-        JsonReference(it)
+fun FluidJson.Companion.wrap(value: Any?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
+    jsonNullOr(value, JsonPath.ROOT, adapter) {
+        JsonReference(it, adapter = adapter)
     }
 
 @ExperimentalUserTypes
@@ -29,7 +29,7 @@ fun <T: Any> FluidJson.valueOrNull(cls: KClass<T>): T? {
         is JsonNull -> null
         is JsonError -> null
         is JsonReference -> content as? T
-        is JsonArray, is JsonObject, is JsonPrimitive -> defaultJsonAdapter.fromJsonTree(cls, this)
+        is JsonArray, is JsonObject, is JsonPrimitive -> adapter.fromJsonTree(cls, this)
         is JsonEmpty -> wrapped?.valueOrNull(cls)
     }
 }

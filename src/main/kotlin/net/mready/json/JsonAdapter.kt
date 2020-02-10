@@ -16,8 +16,14 @@ interface JsonAdapter {
     fun toJsonTree(value: Any?): FluidJson
 }
 
+@PublishedApi
 internal var defaultJsonAdapter: JsonAdapter = KotlinxJsonAdapter()
+    private set
 
 fun FluidJson.Companion.setDefaultAdapter(adapter: JsonAdapter) {
     defaultJsonAdapter = adapter
+}
+
+fun FluidJson.Companion.getDefaultAdapter(): JsonAdapter {
+    return defaultJsonAdapter
 }

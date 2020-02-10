@@ -4,7 +4,10 @@ import kotlinx.serialization.*
 import kotlinx.serialization.internal.*
 import kotlinx.serialization.json.JsonInput
 import kotlinx.serialization.modules.getContextualOrDefault
-import net.mready.json.*
+import net.mready.json.FluidJson
+import net.mready.json.JsonAdapter
+import net.mready.json.internal.JsonPath
+import net.mready.json.defaultJsonAdapter
 import net.mready.json.internal.*
 
 private typealias KJsonElement = kotlinx.serialization.json.JsonElement
@@ -40,35 +43,61 @@ private fun toJsonElement(value: FluidJson): KJsonElement {
     }
 }
 
-private fun fromJsonElement(element: KJsonElement, path: JsonPath = JsonPath.ROOT): FluidJson {
+private fun fromJsonElement(
+    element: KJsonElement,
+    path: JsonPath = JsonPath.ROOT,
+    adapter: JsonAdapter = defaultJsonAdapter
+): FluidJson {
     return when (element) {
         is KJsonObject -> {
             val content = element.content.mapValuesTo(mutableMapOf()) {
-                fromJsonElement(it.value, path + it.key)
+                fromJsonElement(it.value, path + it.key, adapter)
             }
-            JsonObject(content)
+            JsonObject(content, adapter = adapter)
         }
         is KJsonArray -> {
             val content = element.content.mapIndexedTo(mutableListOf()) { index, item ->
-                fromJsonElement(item, path + index)
+                fromJsonElement(item, path + index, adapter)
             }
-            JsonArray(content)
+            JsonArray(content, adapter = adapter)
         }
-        is KJsonNull -> JsonNull(path)
+        is KJsonNull -> JsonNull(path, adapter)
         is KJsonLiteral -> JsonPrimitive(
             content = element.content,
-            type = if (element.isString) JsonPrimitive.Type
-                .STRING else JsonPrimitive.Type.UNKNOWN,
-            path = path
+            type = if (element.isString) JsonPrimitive.Type.STRING else JsonPrimitive.Type.UNKNOWN,
+            path = path,
+            adapter = adapter
         )
     }
 }
 
-@Serializer(forClass = FluidJson::class)
 object FluidJsonSerializer : KSerializer<FluidJson> {
     override val descriptor: SerialDescriptor = object : SerialClassDescImpl("FluidJson") {
         override val kind: SerialKind get() = PolymorphicKind.SEALED
     }
+
+    override fun deserialize(decoder: Decoder): FluidJson {
+        return FluidJsonDeserialization(defaultJsonAdapter).deserialize(decoder)
+    }
+
+    override fun serialize(encoder: Encoder, obj: FluidJson) {
+        FluidJsonSerialization.serialize(encoder, obj)
+    }
+}
+
+class FluidJsonDeserialization(private val adapter: JsonAdapter) : DeserializationStrategy<FluidJson> {
+    override val descriptor: SerialDescriptor = FluidJsonSerializer.descriptor
+
+    override fun patch(decoder: Decoder, old: FluidJson) = throw UpdateNotSupportedException(descriptor.name)
+
+    override fun deserialize(decoder: Decoder): FluidJson {
+        val input = decoder as JsonInput
+        return fromJsonElement(input.decodeJson(), adapter = adapter)
+    }
+}
+
+object FluidJsonSerialization : SerializationStrategy<FluidJson> {
+    override val descriptor: SerialDescriptor = FluidJsonSerializer.descriptor
 
     @UseExperimental(ImplicitReflectionSerializer::class)
     override fun serialize(encoder: Encoder, obj: FluidJson) {
@@ -86,55 +115,33 @@ object FluidJsonSerializer : KSerializer<FluidJson> {
                 serialize(encoder, it)
             } ?: serialize(
                 encoder,
-                JsonNull(obj.path)
+                JsonNull(obj.path, obj.adapter)
             )
         }
     }
-
-    override fun deserialize(decoder: Decoder): FluidJson {
-        val input = decoder as JsonInput
-        return fromJsonElement(input.decodeJson())
-    }
 }
 
-private object JsonObjectSerializer : KSerializer<JsonObject> {
-    override val descriptor: SerialDescriptor =
-        NamedMapClassDescriptor(
-            "JsonObject", StringSerializer.descriptor,
-            FluidJsonSerializer.descriptor
-        )
+private object JsonObjectSerializer : SerializationStrategy<JsonObject> {
+    override val descriptor: SerialDescriptor = NamedMapClassDescriptor(
+        name = "JsonObject",
+        keyDescriptor = StringSerializer.descriptor,
+        valueDescriptor = FluidJsonSerializer.descriptor
+    )
 
     override fun serialize(encoder: Encoder, obj: JsonObject) {
         LinkedHashMapSerializer(StringSerializer, FluidJsonSerializer).serialize(encoder, obj.content)
     }
-
-    override fun deserialize(decoder: Decoder): JsonObject {
-        return JsonObject(
-            LinkedHashMapSerializer(StringSerializer, FluidJsonSerializer)
-                .deserialize(decoder)
-                .toMutableMap()
-        )
-    }
 }
 
-private object JsonArraySerializer : KSerializer<JsonArray> {
-    override val descriptor: SerialDescriptor =
-        NamedListClassDescriptor("JsonArray", FluidJsonSerializer.descriptor)
+private object JsonArraySerializer : SerializationStrategy<JsonArray> {
+    override val descriptor: SerialDescriptor = NamedListClassDescriptor("JsonArray", FluidJsonSerializer.descriptor)
 
     override fun serialize(encoder: Encoder, obj: JsonArray) {
         ArrayListSerializer(FluidJsonSerializer).serialize(encoder, obj.content)
     }
-
-    override fun deserialize(decoder: Decoder): JsonArray {
-        return JsonArray(
-            ArrayListSerializer(FluidJsonSerializer).deserialize(
-                decoder
-            ).toMutableList()
-        )
-    }
 }
 
-private object JsonNullSerializer : KSerializer<JsonNull> {
+private object JsonNullSerializer : SerializationStrategy<JsonNull> {
     override val descriptor: SerialDescriptor = object : SerialClassDescImpl("JsonNull") {
         override val kind: SerialKind = UnionKind.ENUM_KIND
     }
@@ -142,31 +149,19 @@ private object JsonNullSerializer : KSerializer<JsonNull> {
     override fun serialize(encoder: Encoder, obj: JsonNull) {
         encoder.encodeNull()
     }
-
-    override fun deserialize(decoder: Decoder): JsonNull {
-        decoder.decodeNull()
-        return JsonNull()
-    }
 }
 
-private object JsonPrimitiveSerializer : KSerializer<JsonPrimitive> {
+private object JsonPrimitiveSerializer : SerializationStrategy<JsonPrimitive> {
     override val descriptor: SerialDescriptor = object : SerialClassDescImpl("JsonPrimitive") {
         override val kind: SerialKind = PrimitiveKind.STRING
     }
 
     override fun serialize(encoder: Encoder, obj: JsonPrimitive) {
-        when  {
+        when {
             obj.isNumber() -> obj.longOrNull?.let { encoder.encodeLong(it) }
                 ?: encoder.encodeDouble(obj.double)
             obj.isBool() -> encoder.encodeBoolean(obj.bool)
             else -> encoder.encodeString(obj.string)
         }
-    }
-
-    override fun deserialize(decoder: Decoder): JsonPrimitive {
-        return JsonPrimitive(
-            decoder.decodeString(),
-            JsonPrimitive.Type.UNKNOWN
-        )
     }
 }
