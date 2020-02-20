@@ -15,6 +15,8 @@ class FluidJsonException(
     cause: Throwable? = null
 ) : RuntimeException("$message ${path?.let { " (at $path)" }.orEmpty()}", cause)
 
+typealias Json = FluidJson
+
 @Serializable(with = FluidJsonSerializer::class)
 abstract class FluidJson internal constructor(internal val path: JsonPath, internal val adapter: JsonAdapter) {
     companion object {

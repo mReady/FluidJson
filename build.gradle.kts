@@ -1,11 +1,10 @@
+import java.util.Properties
+
 plugins {
     kotlin("jvm") version "1.3.70-eap-42"
     kotlin("plugin.serialization") version "1.3.70-eap-42"
+    id("com.vanniktech.maven.publish") version "0.9.0"
 }
-
-group = "net.mready"
-version = "1.0-SNAPSHOT"
-
 
 tasks {
     compileKotlin {
@@ -24,7 +23,26 @@ tasks {
         )
         kotlinOptions.jvmTarget = "1.8"
     }
+
+    mavenPublish {
+        releaseSigningEnabled = false
+        targets {
+            named("uploadArchives") {
+                val properties = Properties()
+                project.rootProject.file("local.properties").inputStream().use {
+                    properties.load(it)
+                }
+
+                releaseRepositoryUrl = properties.getProperty("NEXUS_RELEASE_URL")
+                snapshotRepositoryUrl = properties.getProperty("NEXUS_SNAPSHOT_URL")
+                repositoryUsername = properties.getProperty("NEXUS_USERNAME")
+                repositoryPassword = properties.getProperty("NEXUS_PASSWORD")
+                signing = false
+            }
+        }
+    }
 }
+
 
 repositories {
     maven { setUrl("https://dl.bintray.com/kotlin/kotlin-eap") }
