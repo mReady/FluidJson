@@ -1,8 +1,8 @@
 import java.util.Properties
 
 plugins {
-    kotlin("jvm") version "1.3.70-eap-42"
-    kotlin("plugin.serialization") version "1.3.70-eap-42"
+    kotlin("jvm") version "1.3.61"
+    kotlin("plugin.serialization") version "1.3.61"
     id("com.vanniktech.maven.publish") version "0.9.0"
 }
 
