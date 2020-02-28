@@ -37,7 +37,7 @@ class JsonBuilderTests {
 
         assertEquals(
             """{"string":"hello","int":1,"long":1,"double":1.0,"bool":true,"null":null}""",
-            json.toJsonString(prettyPrint = false)
+            adapter.stringify(json)
         )
     }
 

@@ -1,13 +1,10 @@
-@file:Suppress("NOTHING_TO_INLINE", "UNUSED_PARAMETER")
+@file:Suppress("UNUSED_PARAMETER", "unused")
 
 package net.mready.json
 
 import kotlinx.serialization.Serializable
 import net.mready.json.adapters.FluidJsonSerializer
-import net.mready.json.internal.JsonEmpty
-import net.mready.json.internal.JsonNull
-import net.mready.json.internal.JsonPath
-import net.mready.json.internal.wrapValue
+import net.mready.json.internal.*
 
 class FluidJsonException(
     message: String,
@@ -18,7 +15,10 @@ class FluidJsonException(
 typealias Json = FluidJson
 
 @Serializable(with = FluidJsonSerializer::class)
-abstract class FluidJson internal constructor(internal val path: JsonPath, internal val adapter: JsonAdapter) {
+abstract class FluidJson internal constructor(
+    val path: JsonPath,
+    val adapter: JsonAdapter
+) {
     companion object {
         fun parse(string: String, adapter: JsonAdapter = defaultJsonAdapter) = adapter.parse(string)
 
@@ -29,16 +29,16 @@ abstract class FluidJson internal constructor(internal val path: JsonPath, inter
             JsonNull(JsonPath.ROOT, adapter)
 
         operator fun invoke(value: String?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            wrapValue(value, JsonPath.ROOT, adapter)
+            wrap(value, JsonPath.ROOT, adapter)
 
         operator fun invoke(value: Number?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            wrapValue(value, JsonPath.ROOT, adapter)
+            wrap(value, JsonPath.ROOT, adapter)
 
         operator fun invoke(value: Boolean?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            wrapValue(value, JsonPath.ROOT, adapter)
+            wrap(value, JsonPath.ROOT, adapter)
     }
 
-    internal abstract fun copy(path: JsonPath, adapter: JsonAdapter): FluidJson
+    abstract fun copy(path: JsonPath, adapter: JsonAdapter): FluidJson
     internal abstract fun copyIfNeeded(path: JsonPath, adapter: JsonAdapter): FluidJson
 
     abstract operator fun get(key: String): FluidJson
@@ -74,13 +74,13 @@ abstract class FluidJson internal constructor(internal val path: JsonPath, inter
     abstract val objOrNull: Map<String, FluidJson>?
     abstract val obj: Map<String, FluidJson>
 
-    fun toJsonString(prettyPrint: Boolean = false, adapter: JsonAdapter = defaultJsonAdapter): String {
-        return adapter.stringify(this, prettyPrint)
+    fun toJsonString(): String {
+        return adapter.stringify(this)
     }
 
 
     private fun Any?.toJson(path: JsonPath): FluidJson {
-        return wrapValue(this, path, adapter)
+        return wrap(this, path, adapter)
     }
 
     // "extension" operators (embedded here because auto-import doesn't work great for operators)

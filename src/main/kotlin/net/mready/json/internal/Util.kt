@@ -3,20 +3,7 @@ package net.mready.json.internal
 import net.mready.json.FluidJson
 import net.mready.json.JsonAdapter
 
-internal inline fun <T> jsonNullOr(
-    value: T?,
-    path: JsonPath,
-    adapter: JsonAdapter,
-    block: (T) -> FluidJson
-): FluidJson {
-    return if (value == null) {
-        JsonNull(path, adapter)
-    } else {
-        block(value)
-    }
-}
-
-internal fun <T> wrapValue(value: T, path: JsonPath = JsonPath.ROOT, adapter: JsonAdapter): FluidJson {
+fun <T> FluidJson.Companion.wrap(value: T, path: JsonPath = JsonPath.ROOT, adapter: JsonAdapter): FluidJson {
     return when (value) {
         null -> JsonNull(path, adapter)
         is String -> JsonPrimitive(value, JsonPrimitive.Type.STRING, path, adapter)
@@ -25,20 +12,19 @@ internal fun <T> wrapValue(value: T, path: JsonPath = JsonPath.ROOT, adapter: Js
         is JsonElement -> value.copy(path, adapter)
         is Collection<*> -> JsonArray(
             content = value.mapIndexedTo(mutableListOf()) { index, item ->
-                wrapValue(item, path + index, adapter)
+                wrap(item, path + index, adapter)
             },
             path = path,
             adapter = adapter
         )
         is Map<*, *> -> JsonObject(
             content = value.entries.fold(mutableMapOf()) { acc, v ->
-                acc[v.key.toString()] =
-                    wrapValue(v.value, path + v.key.toString(), adapter);
+                acc[v.key.toString()] = wrap(v.value, path + v.key.toString(), adapter);
                 return@fold acc
             },
             path = path,
             adapter = adapter
         )
-        else -> throw AssertionError()
+        else -> throw IllegalArgumentException("Unsupported value $value")
     }
 }

@@ -17,7 +17,7 @@ private typealias KJsonObject = kotlinx.serialization.json.JsonObject
 private typealias KJsonArray = kotlinx.serialization.json.JsonArray
 
 fun FluidJson.Companion.from(jsonElement: KJsonElement): FluidJson = fromJsonElement(jsonElement)
-fun FluidJson.toJsonElement(): KJsonElement = toJsonElement(this)
+fun FluidJson.toKotlinJsonElement(): KJsonElement = toJsonElement(this)
 
 @UseExperimental(ExperimentalUserTypes::class)
 @JvmName("convertToJsonElement")

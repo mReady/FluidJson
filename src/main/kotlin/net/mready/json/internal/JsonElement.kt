@@ -1,4 +1,4 @@
-@file:Suppress("NOTHING_TO_INLINE", "UNUSED_PARAMETER")
+@file:Suppress("NOTHING_TO_INLINE", "UNUSED_PARAMETER", "unused")
 
 package net.mready.json.internal
 
@@ -15,6 +15,7 @@ sealed class JsonElement(path: JsonPath, adapter: JsonAdapter) : FluidJson(path,
         throw e
     }
 
+    @PublishedApi
     internal inline fun throwInvalidType(expected: String): Nothing {
         throw FluidJsonException("Element $elementName is not $expected", path)
     }
@@ -109,7 +110,7 @@ class JsonObject(
 
     override operator fun set(key: String, value: FluidJson?) {
         val childPath = path + key
-        content[key] = jsonNullOr(value, childPath, adapter) { it.copyIfNeeded(childPath, adapter) }
+        content[key] = value?.copyIfNeeded(childPath, adapter) ?: JsonNull(childPath, adapter)
     }
 
     override val objOrNull: Map<String, FluidJson>? get() = content
@@ -148,7 +149,7 @@ class JsonArray(
 
     override operator fun set(index: Int, value: FluidJson?) {
         val childPath = path + index
-        val newValue = jsonNullOr(value, childPath, adapter) { it.copyIfNeeded(childPath, adapter) }
+        val newValue = value?.copyIfNeeded(childPath, adapter) ?: JsonNull(childPath, adapter)
 
         when {
             index < 0 -> throwError(
@@ -254,14 +255,17 @@ class JsonReference(
     override val elementName: String
         get() = content?.let { it::class.simpleName } ?: wrapped.elementName
 
-    private var content: Any? = content
-    private val wrapped: JsonElement by lazy {
+    @PublishedApi
+    internal var content: Any? = content
+
+    @PublishedApi
+    internal val wrapped: JsonElement by lazy {
         val json = adapter.toJsonTree(content).copyIfNeeded(path, adapter) as JsonElement
         this.content = null
         return@lazy json
     }
 
-    internal inline fun <T> select(valueTransform: (value: Any) -> T, jsonTransform: (json: FluidJson) -> T): T {
+    inline fun <T> select(valueTransform: (value: Any) -> T, jsonTransform: (json: FluidJson) -> T): T {
         return if (content != null) {
             valueTransform(content!!)
         } else {
@@ -348,6 +352,8 @@ class JsonEmpty(
     @PublishedApi
     internal var wrapped: JsonElement? = null
     private inline val defaultException get() = FluidJsonException("Json element is empty", path)
+
+    fun wrapped(): FluidJson? = wrapped
 
     override fun copy(path: JsonPath, adapter: JsonAdapter) =
         wrapped?.copy(path, adapter) ?: JsonEmpty(path, adapter, pendingException)

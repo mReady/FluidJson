@@ -7,7 +7,7 @@ class JsonParseException(message: String, cause: Throwable) : RuntimeException(m
 
 interface JsonAdapter {
     fun parse(string: String): FluidJson
-    fun stringify(json: FluidJson, prettyPrint: Boolean = false): String
+    fun stringify(json: FluidJson): String
 
     @ExperimentalUserTypes
     fun <T : Any> fromJsonTree(cls: KClass<T>, json: FluidJson): T
