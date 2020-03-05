@@ -2,7 +2,7 @@ package net.mready.json
 
 import net.mready.json.internal.*
 
-@Experimental
+@RequiresOptIn
 annotation class ExperimentalUserTypes
 
 @ExperimentalUserTypes

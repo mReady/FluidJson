@@ -24,7 +24,7 @@ open class KotlinxJsonAdapter(
         @Suppress("EXPERIMENTAL_API_USAGE")
         val defaultJsonConfiguration = JsonConfiguration(
             prettyPrint = false,
-            strictMode = false,
+            ignoreUnknownKeys = true,
             useArrayPolymorphism = true
         )
     }
@@ -56,7 +56,7 @@ open class KotlinxJsonAdapter(
         return jsonSerializer.stringify(serializationStrategy, json)
     }
 
-    @UseExperimental(ImplicitReflectionSerializer::class)
+    @OptIn(ImplicitReflectionSerializer::class)
     @ExperimentalUserTypes
     override fun <T : Any> decodeObject(json: FluidJson, cls: KClass<T>): T {
         return jsonSerializer.fromJson(
@@ -65,12 +65,12 @@ open class KotlinxJsonAdapter(
         )
     }
 
-    @UseExperimental(ImplicitReflectionSerializer::class)
+    @OptIn(ImplicitReflectionSerializer::class)
     @ExperimentalUserTypes
     override fun encodeObject(value: Any?): FluidJson {
         return value?.let {
-            val serializer = jsonSerializer.context.getContextualOrDefault(value)
-            FluidJson.from(jsonSerializer.toJson(serializer, value))
+            val serializer = jsonSerializer.context.getContextualOrDefault(it)
+            FluidJson.from(jsonSerializer.toJson(serializer, it))
         } ?: JsonNull(adapter = this)
     }
 }

@@ -1,15 +1,15 @@
 import java.util.Properties
 
 plugins {
-    kotlin("jvm") version "1.3.61"
-    kotlin("plugin.serialization") version "1.3.61"
+    kotlin("jvm") version "1.3.70"
+    kotlin("plugin.serialization") version "1.3.70"
     id("com.vanniktech.maven.publish") version "0.9.0"
 }
 
 tasks {
     compileKotlin {
         kotlinOptions.freeCompilerArgs = listOf(
-            "-Xuse-experimental=kotlin.Experimental",
+            "-Xopt-in=kotlin.RequiresOptIn",
             "-XXLanguage:+InlineClasses",
             "-progressive"
         )
@@ -17,7 +17,7 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.freeCompilerArgs = listOf(
-            "-Xuse-experimental=kotlin.Experimental",
+            "-Xopt-in=kotlin.RequiresOptIn",
             "-XXLanguage:+InlineClasses",
             "-progressive"
         )
@@ -51,7 +51,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk7"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0")
 
     testImplementation("junit:junit:4.12")
     testImplementation(kotlin("test-junit"))
