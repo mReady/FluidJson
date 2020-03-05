@@ -333,7 +333,7 @@ class JsonReference(
 
     @PublishedApi
     internal val wrapped: JsonElement by lazy {
-        val json = adapter.toJsonTree(content).copyIfNeeded(path, adapter) as JsonElement
+        val json = adapter.encodeObject(content).copyIfNeeded(path, adapter) as JsonElement
         this.content = null
         return@lazy json
     }

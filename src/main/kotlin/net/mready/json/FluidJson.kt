@@ -29,13 +29,16 @@ abstract class FluidJson internal constructor(
             JsonNull(JsonPath.ROOT, adapter)
 
         operator fun invoke(value: String?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            wrap(value, JsonPath.ROOT, adapter)
+            adapter.wrap(value, JsonPath.ROOT)
 
         operator fun invoke(value: Number?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            wrap(value, JsonPath.ROOT, adapter)
+            adapter.wrap(value, JsonPath.ROOT)
 
         operator fun invoke(value: Boolean?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            wrap(value, JsonPath.ROOT, adapter)
+            adapter.wrap(value, JsonPath.ROOT)
+
+        fun wrap(value: Any?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
+            adapter.wrap(value, JsonPath.ROOT)
     }
 
     abstract fun copy(path: JsonPath, adapter: JsonAdapter): FluidJson
@@ -81,9 +84,8 @@ abstract class FluidJson internal constructor(
         return adapter.stringify(this)
     }
 
-
     private fun Any?.toJson(path: JsonPath): FluidJson {
-        return wrap(this, path, adapter)
+        return adapter.wrap(this, path)
     }
 
     // "extension" operators (embedded here because auto-import doesn't work great for operators)

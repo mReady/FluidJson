@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package net.mready.json.adapters
 
 import kotlinx.serialization.ImplicitReflectionSerializer
@@ -9,19 +11,15 @@ import net.mready.json.ExperimentalUserTypes
 import net.mready.json.FluidJson
 import net.mready.json.JsonAdapter
 import net.mready.json.JsonParseException
-import net.mready.json.internal.JsonEmpty
-import net.mready.json.internal.JsonNull
-import net.mready.json.internal.JsonPath
-import net.mready.json.internal.JsonPrimitive
+import net.mready.json.internal.*
 import kotlin.reflect.KClass
 
 typealias KJson = kotlinx.serialization.json.Json
 
-class KotlinxJsonAdapter(
+open class KotlinxJsonAdapter(
     private val serialModule: SerialModule = EmptyModule,
     private val config: JsonConfiguration = defaultJsonConfiguration
-) : JsonAdapter {
-
+) : JsonAdapter() {
     companion object {
         @Suppress("EXPERIMENTAL_API_USAGE")
         val defaultJsonConfiguration = JsonConfiguration(
@@ -31,8 +29,11 @@ class KotlinxJsonAdapter(
         )
     }
 
-    private val serializationStrategy = FluidJsonSerialization
-    private val deserializationStrategy = FluidJsonDeserialization(this)
+    protected val serializationStrategy = FluidJsonSerialization
+    @Suppress("LeakingThis")
+    protected val deserializationStrategy = FluidJsonDeserialization(this)
+
+    protected val jsonSerializer = KJson(config, serialModule)
 
     override fun parse(string: String): FluidJson {
         val jsonString = string.trim()
@@ -45,31 +46,31 @@ class KotlinxJsonAdapter(
         }
 
         try {
-            return KJson(config, serialModule).parse(deserializationStrategy, jsonString)
+            return jsonSerializer.parse(deserializationStrategy, jsonString)
         } catch (e: Throwable) {
             throw JsonParseException(e.message ?: "Unable to parse JSON", e)
         }
     }
 
     override fun stringify(json: FluidJson): String {
-        return KJson(config, serialModule).stringify(serializationStrategy, json)
+        return jsonSerializer.stringify(serializationStrategy, json)
     }
 
     @UseExperimental(ImplicitReflectionSerializer::class)
     @ExperimentalUserTypes
-    override fun <T : Any> fromJsonTree(cls: KClass<T>, json: FluidJson): T {
-        return KJson(config, serialModule).fromJson(
-            KJson.context.getContextualOrDefault(cls),
+    override fun <T : Any> decodeObject(json: FluidJson, cls: KClass<T>): T {
+        return jsonSerializer.fromJson(
+            jsonSerializer.context.getContextualOrDefault(cls),
             json.toKotlinJsonElement()
         )
     }
 
     @UseExperimental(ImplicitReflectionSerializer::class)
     @ExperimentalUserTypes
-    override fun toJsonTree(value: Any?): FluidJson {
+    override fun encodeObject(value: Any?): FluidJson {
         return value?.let {
-            val serializer = KJson.context.getContextualOrDefault(value)
-            FluidJson.from(KJson(config, serialModule).toJson(serializer, value))
+            val serializer = jsonSerializer.context.getContextualOrDefault(value)
+            FluidJson.from(jsonSerializer.toJson(serializer, value))
         } ?: JsonNull(adapter = this)
     }
 }
