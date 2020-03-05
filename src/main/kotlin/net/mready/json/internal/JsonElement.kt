@@ -86,6 +86,14 @@ class JsonNull(path: JsonPath = JsonPath.ROOT, adapter: JsonAdapter) : JsonEleme
 
     override val isNull: Boolean get() = true
     override val orNull: JsonElement? get() = null
+
+    override fun equals(other: Any?): Boolean {
+        return other is JsonNull
+    }
+
+    override fun hashCode(): Int {
+        return 0
+    }
 }
 
 class JsonObject(
@@ -121,6 +129,22 @@ class JsonObject(
     }
 
     override val objOrNull: Map<String, FluidJson>? get() = content
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+
+        if (other is JsonObject) {
+            return this.content == other.content
+        }
+        if (other is JsonEmpty) {
+            return this == other.wrapped
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        return content.hashCode()
+    }
 }
 
 class JsonArray(
@@ -181,6 +205,21 @@ class JsonArray(
     }
 
     override val arrayOrNull: List<FluidJson>? get() = content
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other is JsonArray) {
+            return this.content == other.content
+        }
+        if (other is JsonEmpty) {
+            return this == other.wrapped
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        return content.hashCode()
+    }
 }
 
 class JsonPrimitive(
@@ -255,6 +294,29 @@ class JsonPrimitive(
         } else {
             null
         }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is JsonPrimitive) return false
+
+        if (this.isBool() && other.isBool()) {
+            return this.bool == other.bool
+        }
+
+        if (this.isNumber() && other.isNumber()) {
+            return this.double == other.double
+        }
+
+        if (this.isString() && other.isString()) {
+            return this.string == other.string
+        }
+
+        return false
+    }
+
+    override fun hashCode(): Int {
+        return content.hashCode()
+    }
 }
 
 @UseExperimental(ExperimentalUserTypes::class)
@@ -439,4 +501,19 @@ class JsonEmpty(
     override val objOrNull: Map<String, FluidJson>? get() = wrapped?.objOrNull
     override val obj: Map<String, FluidJson>
         get() = wrapped?.obj ?: throwError(pendingException?.invoke() ?: defaultException)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other is JsonEmpty) {
+            return this.wrapped == other.wrapped
+        }
+        if (other is JsonObject || other is JsonArray) {
+            return this.wrapped == other
+        }
+        return false
+    }
+
+    override fun hashCode(): Int {
+        return wrapped?.hashCode() ?: 0
+    }
 }
