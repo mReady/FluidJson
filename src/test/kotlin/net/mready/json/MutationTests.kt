@@ -154,4 +154,26 @@ class MutationTests {
             adapter.stringify(json)
         )
     }
+
+    fun deleteObjectKey() {
+        val json = jsonObject {
+            "hello" value "world"
+        }
+        assertEquals("world", json["hello"].string)
+
+        json.delete("hello")
+        assertTrue { json["hello"].isNull }
+    }
+
+    fun deleteArrayIndex() {
+        val json = jsonArray {
+            array[0] = 1
+            array[1] = 2
+            array[3] = 3
+        }
+
+        assertEquals(listOf(1, 2, 3), json["hello"].array.map { it.int })
+        json.delete(1)
+        assertEquals(listOf(1, 3), json["hello"].array.map { it.int })
+    }
 }

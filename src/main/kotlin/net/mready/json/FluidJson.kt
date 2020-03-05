@@ -48,6 +48,9 @@ abstract class FluidJson internal constructor(
     abstract operator fun set(index: Int, value: FluidJson?)
     abstract operator fun plusAssign(value: FluidJson?)
 
+    abstract fun delete(key: String)
+    abstract fun delete(index: Int)
+
     abstract val size: Int
 
     abstract val isNull: Boolean

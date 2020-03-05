@@ -48,6 +48,9 @@ sealed class JsonElement(path: JsonPath, adapter: JsonAdapter) : FluidJson(path,
     override operator fun set(index: Int, value: FluidJson?): Unit = throwInvalidType("array")
     override operator fun plusAssign(value: FluidJson?): Unit = throwInvalidType("array")
 
+    override fun delete(key: String): Unit = throwInvalidType("object")
+    override fun delete(index: Int): Unit = throwInvalidType("array")
+
     override val size: Int get() = throwInvalidType("object or array")
 
     override val isNull: Boolean get() = false
@@ -113,6 +116,10 @@ class JsonObject(
         content[key] = value?.copyIfNeeded(childPath, adapter) ?: JsonNull(childPath, adapter)
     }
 
+    override fun delete(key: String) {
+        content.remove(key)
+    }
+
     override val objOrNull: Map<String, FluidJson>? get() = content
 }
 
@@ -167,6 +174,10 @@ class JsonArray(
 
     override operator fun plusAssign(value: FluidJson?) {
         set(size, value)
+    }
+
+    override fun delete(index: Int) {
+        content.removeAt(index)
     }
 
     override val arrayOrNull: List<FluidJson>? get() = content
@@ -297,6 +308,9 @@ class JsonReference(
         wrapped += value
     }
 
+    override fun delete(key: String) = wrapped.delete(key)
+    override fun delete(index: Int) = wrapped.delete(index)
+
     override val size get() = wrapped.size
     override val isNull get() = wrapped.isNull
     override val orNull get() = wrapped.orNull
@@ -405,6 +419,9 @@ class JsonEmpty(
     override operator fun plusAssign(value: FluidJson?) {
         materializeAsArray() += value
     }
+
+    override fun delete(key: String) = materializeAsObject().delete(key)
+    override fun delete(index: Int) = materializeAsArray().delete(index)
 
     override val isNull: Boolean get() = wrapped == null
     override val orNull: FluidJson? get() = wrapped
