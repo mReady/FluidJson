@@ -10,7 +10,7 @@ abstract class JsonAdapter {
     abstract fun parse(string: String): FluidJson
     abstract fun stringify(json: FluidJson): String
 
-    open fun wrap(value: Any?, path: JsonPath): FluidJson {
+    open fun wrap(value: Any?, path: JsonPath = JsonPath.ROOT): FluidJson {
         return wrapInternal(value, path) ?: throw IllegalArgumentException("Unsupported value $value")
     }
 
