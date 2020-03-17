@@ -319,7 +319,7 @@ class JsonPrimitive(
     }
 }
 
-@UseExperimental(ExperimentalUserTypes::class)
+@OptIn(ExperimentalUserTypes::class)
 class JsonReference(
     content: Any,
     path: JsonPath = JsonPath.ROOT,

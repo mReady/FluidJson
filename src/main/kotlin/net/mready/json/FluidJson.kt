@@ -61,7 +61,7 @@ abstract class FluidJson internal constructor(
     /**
      * Creates a deep copy of this json tree using the specified [path] as root and [adapter].
      */
-    abstract fun copy(path: JsonPath, adapter: JsonAdapter): FluidJson
+    abstract fun copy(path: JsonPath = this.path, adapter: JsonAdapter = this.adapter): FluidJson
 
     // Creates a copy only if the path or the adapter are different
     internal abstract fun copyIfNeeded(path: JsonPath, adapter: JsonAdapter): FluidJson
