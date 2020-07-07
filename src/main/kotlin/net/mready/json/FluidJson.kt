@@ -4,7 +4,9 @@ package net.mready.json
 
 import kotlinx.serialization.Serializable
 import net.mready.json.adapters.FluidJsonSerializer
+import net.mready.json.adapters.KotlinxJsonAdapter
 import net.mready.json.internal.*
+import kotlin.reflect.KType
 
 typealias Json = FluidJson
 
@@ -13,49 +15,77 @@ abstract class FluidJson internal constructor(
     val path: JsonPath,
     val adapter: JsonAdapter
 ) {
-    companion object {
+    companion object: JsonAdapter() {
+        private var defaultJsonAdapter: JsonAdapter = KotlinxJsonAdapter()
+
+        fun setDefaultAdapter(adapter: JsonAdapter) {
+            defaultJsonAdapter = adapter
+        }
+
         /**
          * Parse the given [string] using the specified [adapter].
          *
          * @throws [JsonParseException] if the given [string] is not a valid JSON
          */
-        fun parse(string: String, adapter: JsonAdapter = defaultJsonAdapter) = adapter.parse(string)
+        override fun parse(string: String) =
+            defaultJsonAdapter.parse(string)
+
+        override fun stringify(json: FluidJson) =
+            defaultJsonAdapter.stringify(json)
+
+        @ExperimentalUserTypes
+        override fun <T : Any> fromJson(json: FluidJson, type: KType) =
+            defaultJsonAdapter.fromJson<T>(json, type)
+
+        @ExperimentalUserTypes
+        override fun toJson(value: Any?, type: KType) =
+            defaultJsonAdapter.toJson(value, type)
+
+        @ExperimentalUserTypes
+        override fun <T : Any> decodeObject(string: String, type: KType) =
+            defaultJsonAdapter.decodeObject<T>(string, type)
+
+        @ExperimentalUserTypes
+        override fun encodeObject(value: Any?, type: KType) =
+            defaultJsonAdapter.encodeObject(value, type)
+
 
         /**
          * Create an empty [FluidJson] instance.
          */
-        operator fun invoke(adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            JsonEmptyElement(JsonPath.ROOT, adapter)
+        operator fun invoke(): FluidJson =
+            defaultJsonAdapter.newJson()
 
         /**
          * Create a [FluidJson] instance representing `null`.
          */
-        operator fun invoke(value: Nothing?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            JsonNullElement(JsonPath.ROOT, adapter)
+        operator fun invoke(value: Nothing?): FluidJson =
+            JsonNullElement(JsonPath.ROOT, defaultJsonAdapter)
 
         /**
          * Wrap the given string [value] into a [FluidJson] instance.
          */
-        operator fun invoke(value: String?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            adapter.wrap(value, JsonPath.ROOT)
+        operator fun invoke(value: String?): FluidJson =
+            defaultJsonAdapter.wrap(value, JsonPath.ROOT)
 
         /**
          * Wrap the given number [value] into a [FluidJson] instance.
          */
-        operator fun invoke(value: Number?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            adapter.wrap(value, JsonPath.ROOT)
+        operator fun invoke(value: Number?): FluidJson =
+            defaultJsonAdapter.wrap(value, JsonPath.ROOT)
 
         /**
          * Wrap the given boolean [value] into a [FluidJson] instance.
          */
-        operator fun invoke(value: Boolean?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            adapter.wrap(value, JsonPath.ROOT)
+        operator fun invoke(value: Boolean?): FluidJson =
+            defaultJsonAdapter.wrap(value, JsonPath.ROOT)
 
-        /**
-         * Wrap the given [value] into a [FluidJson] instance.
-         */
-        fun wrap(value: Any?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            adapter.wrap(value, JsonPath.ROOT)
+        override fun equals(other: Any?): Boolean {
+            // Setters and DSLs will make copies of elements if we don't override equals
+            // but bad things can happen if the default adapter is switched after element instances were created
+            // TODO: should setting the default adapter be prohibited after it's first used?
+            return other == defaultJsonAdapter
+        }
     }
 
     /**

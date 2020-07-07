@@ -19,10 +19,10 @@ inline fun <reified T : Any> JsonAdapter.decodeObject(string: String): T = decod
 inline fun <reified T : Any?> JsonAdapter.encodeObject(value: T): String = encodeObject(value, typeOf<T>())
 
 @ExperimentalUserTypes
-inline fun <reified T: Any> FluidJson.Companion.ref(
+inline fun <reified T : Any> FluidJson.Companion.ref(
     value: T?,
     path: JsonPath = JsonPath.ROOT,
-    adapter: JsonAdapter = defaultJsonAdapter
+    adapter: JsonAdapter = FluidJson
 ): FluidJson =
     value?.let { JsonRefElement(it, typeOf<T>(), adapter = adapter) } ?: JsonNullElement(path, adapter)
 

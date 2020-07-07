@@ -10,11 +10,11 @@ import net.mready.json.internal.JsonPath
 @DslMarker
 annotation class JsonDslMarker
 
-inline fun jsonObject(adapter: JsonAdapter = defaultJsonAdapter, block: JsonObjectDsl.() -> Unit): FluidJson {
+inline fun jsonObject(adapter: JsonAdapter = FluidJson, block: JsonObjectDsl.() -> Unit): FluidJson {
     return JsonObjectDsl(adapter = adapter).apply(block).build()
 }
 
-inline fun jsonArray(adapter: JsonAdapter = defaultJsonAdapter, block: JsonArrayDsl.() -> Unit): FluidJson {
+inline fun jsonArray(adapter: JsonAdapter = FluidJson, block: JsonArrayDsl.() -> Unit): FluidJson {
     return JsonArrayDsl(adapter = adapter).apply(block).build()
 }
 
@@ -35,7 +35,7 @@ open class JsonDsl(
 @JsonDslMarker
 class JsonObjectDsl(
     path: JsonPath = JsonPath.ROOT,
-    adapter: JsonAdapter = defaultJsonAdapter
+    adapter: JsonAdapter = FluidJson
 ) : JsonDsl(path, adapter) {
     val obj: FluidJson = JsonObjectElement(mutableMapOf(), path, adapter)
 
@@ -76,7 +76,7 @@ class JsonObjectDsl(
 @JsonDslMarker
 class JsonArrayDsl(
     path: JsonPath = JsonPath.ROOT,
-    adapter: JsonAdapter = defaultJsonAdapter
+    adapter: JsonAdapter = FluidJson
 ) : JsonDsl(path, adapter) {
     val array: FluidJson = JsonArrayElement(mutableListOf(), path, adapter)
 

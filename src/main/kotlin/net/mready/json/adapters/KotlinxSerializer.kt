@@ -9,7 +9,6 @@ import kotlinx.serialization.modules.getContextualOrDefault
 import net.mready.json.ExperimentalUserTypes
 import net.mready.json.FluidJson
 import net.mready.json.JsonAdapter
-import net.mready.json.defaultJsonAdapter
 import net.mready.json.internal.*
 
 private typealias KJsonElement = kotlinx.serialization.json.JsonElement
@@ -18,7 +17,7 @@ private typealias KJsonLiteral = kotlinx.serialization.json.JsonLiteral
 private typealias KJsonObject = kotlinx.serialization.json.JsonObject
 private typealias KJsonArray = kotlinx.serialization.json.JsonArray
 
-fun FluidJson.Companion.from(jsonElement: KJsonElement): FluidJson = fromJsonElement(jsonElement)
+fun FluidJson.Companion.fromKotlinJsonElement(jsonElement: KJsonElement): FluidJson = fromJsonElement(jsonElement)
 fun FluidJson.toKotlinJsonElement(): KJsonElement = toJsonElement(this)
 
 @OptIn(ExperimentalUserTypes::class)
@@ -52,7 +51,7 @@ private fun toJsonElement(value: FluidJson): KJsonElement {
 private fun fromJsonElement(
     element: KJsonElement,
     path: JsonPath = JsonPath.ROOT,
-    adapter: JsonAdapter = defaultJsonAdapter
+    adapter: JsonAdapter = FluidJson
 ): FluidJson {
     return when (element) {
         is KJsonObject -> {
@@ -81,7 +80,7 @@ object FluidJsonSerializer : KSerializer<FluidJson> {
     override val descriptor = SerialDescriptor("FluidJson", PolymorphicKind.SEALED)
 
     override fun deserialize(decoder: Decoder): FluidJson {
-        return FluidJsonDeserialization(defaultJsonAdapter).deserialize(decoder)
+        return FluidJsonDeserialization(FluidJson).deserialize(decoder)
     }
 
     override fun serialize(encoder: Encoder, value: FluidJson) {

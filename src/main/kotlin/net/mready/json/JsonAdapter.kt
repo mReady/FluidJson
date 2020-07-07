@@ -1,6 +1,5 @@
 package net.mready.json
 
-import net.mready.json.adapters.KotlinxJsonAdapter
 import net.mready.json.internal.*
 import kotlin.reflect.KType
 
@@ -9,6 +8,10 @@ class JsonParseException(message: String, cause: Throwable) : RuntimeException(m
 abstract class JsonAdapter {
     abstract fun parse(string: String): FluidJson
     abstract fun stringify(json: FluidJson): String
+
+    fun newJson(): FluidJson {
+        return JsonEmptyElement(adapter = this)
+    }
 
     open fun wrap(value: Any?, path: JsonPath = JsonPath.ROOT): FluidJson {
         return wrapInternal(value, path) ?: throw IllegalArgumentException("Unsupported value $value")
@@ -51,16 +54,4 @@ abstract class JsonAdapter {
 
     @ExperimentalUserTypes
     abstract fun encodeObject(value: Any?, type: KType): String
-}
-
-@PublishedApi
-internal var defaultJsonAdapter: JsonAdapter = KotlinxJsonAdapter()
-    private set
-
-fun FluidJson.Companion.setDefaultAdapter(adapter: JsonAdapter) {
-    defaultJsonAdapter = adapter
-}
-
-fun FluidJson.Companion.getDefaultAdapter(): JsonAdapter {
-    return defaultJsonAdapter
 }

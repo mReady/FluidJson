@@ -29,18 +29,18 @@ class EqualityTests {
         assertNotEquals(Json(123), Json("123"))
 
         assertEquals(
-            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = defaultJsonAdapter),
-            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = defaultJsonAdapter)
+            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = FluidJson),
+            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = FluidJson)
         )
 
         assertEquals(
-            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.NUMBER, adapter = defaultJsonAdapter),
-            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = defaultJsonAdapter)
+            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.NUMBER, adapter = FluidJson),
+            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = FluidJson)
         )
 
         assertEquals(
-            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.STRING, adapter = defaultJsonAdapter),
-            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = defaultJsonAdapter)
+            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.STRING, adapter = FluidJson),
+            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = FluidJson)
         )
     }
 

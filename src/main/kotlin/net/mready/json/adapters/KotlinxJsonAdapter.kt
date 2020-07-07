@@ -74,7 +74,7 @@ open class KotlinxJsonAdapter(
     override fun toJson(value: Any?, type: KType): FluidJson {
         return value?.let {
             val serializer = jsonSerializer.context.getContextualOrDefault<Any>(type)
-            FluidJson.from(jsonSerializer.toJson(serializer, it))
+            FluidJson.fromKotlinJsonElement(jsonSerializer.toJson(serializer, it))
         } ?: JsonNullElement(adapter = this)
     }
 
