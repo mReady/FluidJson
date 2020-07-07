@@ -25,13 +25,13 @@ abstract class FluidJson internal constructor(
          * Create an empty [FluidJson] instance.
          */
         operator fun invoke(adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            JsonEmpty(JsonPath.ROOT, adapter)
+            JsonEmptyElement(JsonPath.ROOT, adapter)
 
         /**
          * Create a [FluidJson] instance representing `null`.
          */
         operator fun invoke(value: Nothing?, adapter: JsonAdapter = defaultJsonAdapter): FluidJson =
-            JsonNull(JsonPath.ROOT, adapter)
+            JsonNullElement(JsonPath.ROOT, adapter)
 
         /**
          * Wrap the given string [value] into a [FluidJson] instance.
@@ -68,20 +68,20 @@ abstract class FluidJson internal constructor(
 
     /**
      * Returns the json element at the specified [key] if this json element represents an object.
-     * If the key does not already exist in the object, a new [JsonEmpty] instance will be created that
+     * If the key does not already exist in the object, a new [JsonEmptyElement] instance will be created that
      * can be materialized as an object or array.
      *
-     * If this json element is not an object, a catch-all [JsonError] is returned that will throw when a
+     * If this json element is not an object, a catch-all [JsonErrorElement] is returned that will throw when a
      * non-chaining operator is called
      */
     abstract operator fun get(key: String): FluidJson
 
     /**
      * Returns the json element at the specified [index] if this json element represents an array.
-     * If the key does not already exist in the object, a new [JsonEmpty] instance will be created that
+     * If the key does not already exist in the object, a new [JsonEmptyElement] instance will be created that
      * can be materialized as an object or array.
      *
-     * If this json element is not an array, a catch-all [JsonError] is returned that will throw when a
+     * If this json element is not an array, a catch-all [JsonErrorElement] is returned that will throw when a
      * non-chaining operator is called
      */
     abstract operator fun get(index: Int): FluidJson
@@ -98,7 +98,7 @@ abstract class FluidJson internal constructor(
 
     /**
      * Adds the specified [value] at the specified [index] if this json element represents an array.
-     * In the [index] is > than the current [size] the "empty" indexes will be filled with [JsonEmpty] instances
+     * In the [index] is > than the current [size] the "empty" indexes will be filled with [JsonEmptyElement] instances
      *
      * A copy of the specified [value] will be crated if the path is different from it's new position in the tree
      * or if it was bound to a different adapter.
@@ -139,12 +139,12 @@ abstract class FluidJson internal constructor(
     abstract val size: Int
 
     /**
-     * Returns `true` if this json element represents `null` or is an [JsonError].
+     * Returns `true` if this json element represents `null` or is an [JsonErrorElement].
      */
     abstract val isNull: Boolean
 
     /**
-     * Returns `null` if this json element represents `null` or is an [JsonError].
+     * Returns `null` if this json element represents `null` or is an [JsonErrorElement].
      */
     abstract val orNull: FluidJson?
 
@@ -250,7 +250,7 @@ abstract class FluidJson internal constructor(
      *
      * @throws [FluidJsonException] if this element does not represent an object
      */
-    operator fun set(key: String, value: Nothing?) = set(key, JsonNull(path + key, adapter))
+    operator fun set(key: String, value: Nothing?) = set(key, JsonNullElement(path + key, adapter))
 
     /**
      * Associates a json element representing the given [value] with the specified [key].
@@ -302,7 +302,7 @@ abstract class FluidJson internal constructor(
      *
      * @throws [FluidJsonException] if this element does not represent an array
      */
-    operator fun set(index: Int, value: Nothing?) = set(index, JsonNull(path + index, adapter))
+    operator fun set(index: Int, value: Nothing?) = set(index, JsonNullElement(path + index, adapter))
 
     /**
      * Adds a json element representing the given [value] the the specified [index].
@@ -354,7 +354,7 @@ abstract class FluidJson internal constructor(
      *
      * @throws [FluidJsonException] if this element does not represent an array
      */
-    operator fun plusAssign(value: Nothing?) = plusAssign(JsonNull(path + size, adapter))
+    operator fun plusAssign(value: Nothing?) = plusAssign(JsonNullElement(path + size, adapter))
 
     /**
      * Adds a json element representing the given [value].

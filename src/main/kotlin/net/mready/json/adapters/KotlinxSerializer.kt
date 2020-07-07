@@ -26,26 +26,26 @@ fun FluidJson.toKotlinJsonElement(): KJsonElement = toJsonElement(this)
 private fun toJsonElement(value: FluidJson): KJsonElement {
     if (value !is JsonElement) throw AssertionError()
     return when (value) {
-        is JsonNull -> KJsonNull
-        is JsonPrimitive -> when {
+        is JsonNullElement -> KJsonNull
+        is JsonPrimitiveElement -> when {
             value.isNumber() -> KJsonLiteral((value.longOrNull ?: value.double) as Number)
             value.isBool() -> KJsonLiteral(value.bool)
             else -> KJsonLiteral(value.string)
         }
-        is JsonObject -> KJsonObject(value.content.mapValues {
+        is JsonObjectElement -> KJsonObject(value.content.mapValues {
             toJsonElement(it.value)
         })
-        is JsonArray -> KJsonArray(value.content.map {
+        is JsonArrayElement -> KJsonArray(value.content.map {
             toJsonElement(it)
         })
-        is JsonEmpty -> value.wrapped?.let {
+        is JsonEmptyElement -> value.wrapped?.let {
             toJsonElement(it)
         } ?: KJsonNull
-        is JsonReference -> value.select(
-            valueTransform = { toJsonElement(value.adapter.encodeObject(it)) },
+        is JsonRefElement -> value.select(
+            valueTransform = { toJsonElement(value.adapter.encodeObject(it, value.type)) },
             jsonTransform = { toJsonElement(it) }
         )
-        is JsonError -> TODO()
+        is JsonErrorElement -> throw AssertionError()
     }
 }
 
@@ -59,18 +59,18 @@ private fun fromJsonElement(
             val content = element.content.mapValuesTo(mutableMapOf()) {
                 fromJsonElement(it.value, path + it.key, adapter)
             }
-            JsonObject(content, adapter = adapter)
+            JsonObjectElement(content, adapter = adapter)
         }
         is KJsonArray -> {
             val content = element.content.mapIndexedTo(mutableListOf()) { index, item ->
                 fromJsonElement(item, path + index, adapter)
             }
-            JsonArray(content, adapter = adapter)
+            JsonArrayElement(content, adapter = adapter)
         }
-        is KJsonNull -> JsonNull(path, adapter)
-        is KJsonLiteral -> JsonPrimitive(
+        is KJsonNull -> JsonNullElement(path, adapter)
+        is KJsonLiteral -> JsonPrimitiveElement(
             content = element.content,
-            type = if (element.isString) JsonPrimitive.Type.STRING else JsonPrimitive.Type.UNKNOWN,
+            type = if (element.isString) JsonPrimitiveElement.Type.STRING else JsonPrimitiveElement.Type.UNKNOWN,
             path = path,
             adapter = adapter
         )
@@ -92,7 +92,7 @@ object FluidJsonSerializer : KSerializer<FluidJson> {
 class FluidJsonDeserialization(private val adapter: JsonAdapter) : DeserializationStrategy<FluidJson> {
     override val descriptor: SerialDescriptor = FluidJsonSerializer.descriptor
 
-    override fun patch(decoder: Decoder, old: FluidJson) = throw UpdateNotSupportedException(descriptor.serialName)
+    override fun patch(decoder: Decoder, old: FluidJson) = throw AssertionError()
 
     override fun deserialize(decoder: Decoder): FluidJson {
         val input = decoder as JsonInput
@@ -103,33 +103,34 @@ class FluidJsonDeserialization(private val adapter: JsonAdapter) : Deserializati
 object FluidJsonSerialization : SerializationStrategy<FluidJson> {
     override val descriptor: SerialDescriptor = FluidJsonSerializer.descriptor
 
-    @OptIn(ImplicitReflectionSerializer::class)
+    @OptIn(UnsafeSerializationApi::class)
     override fun serialize(encoder: Encoder, value: FluidJson) {
         if (value !is JsonElement) throw AssertionError()
         when (value) {
-            is JsonPrimitive -> encoder.encodeSerializableValue(JsonPrimitiveSerializer, value)
-            is JsonObject -> encoder.encodeSerializableValue(JsonObjectSerializer, value)
-            is JsonArray -> encoder.encodeSerializableValue(JsonArraySerializer, value)
-            is JsonNull -> encoder.encodeSerializableValue(JsonNullSerializer, value)
-            is JsonReference -> value.select(
+            is JsonPrimitiveElement -> encoder.encodeSerializableValue(JsonPrimitiveSerializer, value)
+            is JsonObjectElement -> encoder.encodeSerializableValue(JsonObjectSerializer, value)
+            is JsonArrayElement -> encoder.encodeSerializableValue(JsonArraySerializer, value)
+            is JsonNullElement -> encoder.encodeSerializableValue(JsonNullSerializer, value)
+            is JsonRefElement -> value.select(
                 valueTransform = {
-                    encoder.encodeSerializableValue(encoder.context.getContextualOrDefault(it), it)
+                    val serializer = encoder.context.getContextualOrDefault<Any>(value.type)
+                    encoder.encodeSerializableValue(serializer, it)
                 },
                 jsonTransform = {
                     serialize(encoder, it)
                 }
             )
-            is JsonEmpty -> value.wrapped?.let {
+            is JsonEmptyElement -> value.wrapped?.let {
                 serialize(encoder, it)
             } ?: serialize(
                 encoder,
-                JsonNull(value.path, value.adapter)
+                JsonNullElement(value.path, value.adapter)
             )
         }
     }
 }
 
-private object JsonObjectSerializer : SerializationStrategy<JsonObject> {
+private object JsonObjectSerializer : SerializationStrategy<JsonObjectElement> {
     override val descriptor = SerialDescriptor("JsonObject", StructureKind.MAP) {
         mapDescriptor(
             keyDescriptor = String.serializer().descriptor,
@@ -137,33 +138,33 @@ private object JsonObjectSerializer : SerializationStrategy<JsonObject> {
         )
     }
 
-    override fun serialize(encoder: Encoder, value: JsonObject) {
+    override fun serialize(encoder: Encoder, value: JsonObjectElement) {
         MapSerializer(String.serializer(), FluidJsonSerializer).serialize(encoder, value.content)
     }
 }
 
-private object JsonArraySerializer : SerializationStrategy<JsonArray> {
+private object JsonArraySerializer : SerializationStrategy<JsonArrayElement> {
     override val descriptor = SerialDescriptor("JsonArray", StructureKind.LIST) {
         listDescriptor(typeDescriptor = FluidJsonSerializer.descriptor)
     }
 
-    override fun serialize(encoder: Encoder, value: JsonArray) {
+    override fun serialize(encoder: Encoder, value: JsonArrayElement) {
         ListSerializer(FluidJsonSerializer).serialize(encoder, value.content)
     }
 }
 
-private object JsonNullSerializer : SerializationStrategy<JsonNull> {
+private object JsonNullSerializer : SerializationStrategy<JsonNullElement> {
     override val descriptor = SerialDescriptor("JsonNull", UnionKind.ENUM_KIND)
 
-    override fun serialize(encoder: Encoder, value: JsonNull) {
+    override fun serialize(encoder: Encoder, value: JsonNullElement) {
         encoder.encodeNull()
     }
 }
 
-private object JsonPrimitiveSerializer : SerializationStrategy<JsonPrimitive> {
+private object JsonPrimitiveSerializer : SerializationStrategy<JsonPrimitiveElement> {
     override val descriptor = SerialDescriptor("JsonPrimitive", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: JsonPrimitive) {
+    override fun serialize(encoder: Encoder, value: JsonPrimitiveElement) {
         when {
             value.isNumber() -> value.longOrNull?.let { encoder.encodeLong(it) }
                 ?: encoder.encodeDouble(value.double)

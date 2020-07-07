@@ -1,11 +1,19 @@
 package net.mready.json
 
+import net.mready.json.adapters.JacksonJsonAdapter
 import net.mready.json.adapters.KotlinxJsonAdapter
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import kotlin.test.assertEquals
 
-class JsonBuilderTests {
-    private val adapter: JsonAdapter = KotlinxJsonAdapter()
+@RunWith(Parameterized::class)
+class JsonBuilderTests(private val adapter: JsonAdapter) {
+    companion object {
+        @get:Parameterized.Parameters
+        @JvmStatic
+        val adapters = listOf(KotlinxJsonAdapter(), JacksonJsonAdapter)
+    }
 
     @Test
     fun buildSimpleObject() {

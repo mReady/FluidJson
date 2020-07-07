@@ -2,7 +2,7 @@
 
 package net.mready.json.adapters
 
-import kotlinx.serialization.ImplicitReflectionSerializer
+import kotlinx.serialization.UnsafeSerializationApi
 import kotlinx.serialization.json.JsonConfiguration
 import kotlinx.serialization.modules.EmptyModule
 import kotlinx.serialization.modules.SerialModule
@@ -11,8 +11,11 @@ import net.mready.json.ExperimentalUserTypes
 import net.mready.json.FluidJson
 import net.mready.json.JsonAdapter
 import net.mready.json.JsonParseException
-import net.mready.json.internal.*
-import kotlin.reflect.KClass
+import net.mready.json.internal.JsonEmptyElement
+import net.mready.json.internal.JsonNullElement
+import net.mready.json.internal.JsonPath
+import net.mready.json.internal.JsonPrimitiveElement
+import kotlin.reflect.KType
 
 typealias KJson = kotlinx.serialization.json.Json
 
@@ -30,6 +33,7 @@ open class KotlinxJsonAdapter(
     }
 
     protected val serializationStrategy = FluidJsonSerialization
+
     @Suppress("LeakingThis")
     protected val deserializationStrategy = FluidJsonDeserialization(this)
 
@@ -38,11 +42,11 @@ open class KotlinxJsonAdapter(
     override fun parse(string: String): FluidJson {
         val jsonString = string.trim()
         if (jsonString.isEmpty()) {
-            return JsonEmpty(JsonPath.ROOT, adapter = this)
+            return JsonEmptyElement(JsonPath.ROOT, adapter = this)
         }
 
         if (!jsonString.startsWith('{') && !jsonString.startsWith('[')) {
-            return JsonPrimitive(jsonString, JsonPrimitive.Type.UNKNOWN, JsonPath.ROOT, adapter = this)
+            return JsonPrimitiveElement(jsonString, JsonPrimitiveElement.Type.UNKNOWN, JsonPath.ROOT, adapter = this)
         }
 
         try {
@@ -56,21 +60,21 @@ open class KotlinxJsonAdapter(
         return jsonSerializer.stringify(serializationStrategy, json)
     }
 
-    @OptIn(ImplicitReflectionSerializer::class)
+    @OptIn(UnsafeSerializationApi::class)
     @ExperimentalUserTypes
-    override fun <T : Any> decodeObject(json: FluidJson, cls: KClass<T>): T {
+    override fun <T : Any> decodeObject(json: FluidJson, type: KType): T {
         return jsonSerializer.fromJson(
-            jsonSerializer.context.getContextualOrDefault(cls),
+            jsonSerializer.context.getContextualOrDefault(type),
             json.toKotlinJsonElement()
         )
     }
 
-    @OptIn(ImplicitReflectionSerializer::class)
+    @OptIn(UnsafeSerializationApi::class)
     @ExperimentalUserTypes
-    override fun encodeObject(value: Any?): FluidJson {
+    override fun encodeObject(value: Any?, type: KType): FluidJson {
         return value?.let {
-            val serializer = jsonSerializer.context.getContextualOrDefault(it)
+            val serializer = jsonSerializer.context.getContextualOrDefault<Any>(type)
             FluidJson.from(jsonSerializer.toJson(serializer, it))
-        } ?: JsonNull(adapter = this)
+        } ?: JsonNullElement(adapter = this)
     }
 }

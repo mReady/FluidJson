@@ -2,8 +2,8 @@
 
 package net.mready.json
 
-import net.mready.json.internal.JsonArray
-import net.mready.json.internal.JsonObject
+import net.mready.json.internal.JsonArrayElement
+import net.mready.json.internal.JsonObjectElement
 import net.mready.json.internal.JsonPath
 
 
@@ -37,7 +37,7 @@ class JsonObjectDsl(
     path: JsonPath = JsonPath.ROOT,
     adapter: JsonAdapter = defaultJsonAdapter
 ) : JsonDsl(path, adapter) {
-    val obj: FluidJson = JsonObject(mutableMapOf(), path, adapter)
+    val obj: FluidJson = JsonObjectElement(mutableMapOf(), path, adapter)
 
     infix fun String.value(value: Nothing?) {
         obj[this] = null
@@ -78,7 +78,7 @@ class JsonArrayDsl(
     path: JsonPath = JsonPath.ROOT,
     adapter: JsonAdapter = defaultJsonAdapter
 ) : JsonDsl(path, adapter) {
-    val array: FluidJson = JsonArray(mutableListOf(), path, adapter)
+    val array: FluidJson = JsonArrayElement(mutableListOf(), path, adapter)
 
     fun emit(value: Nothing?) {
         array += null

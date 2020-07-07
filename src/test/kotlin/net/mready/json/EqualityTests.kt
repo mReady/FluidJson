@@ -1,6 +1,6 @@
 package net.mready.json
 
-import net.mready.json.internal.JsonPrimitive
+import net.mready.json.internal.JsonPrimitiveElement
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -29,18 +29,18 @@ class EqualityTests {
         assertNotEquals(Json(123), Json("123"))
 
         assertEquals(
-            JsonPrimitive("123", JsonPrimitive.Type.UNKNOWN, adapter = defaultJsonAdapter),
-            JsonPrimitive("123", JsonPrimitive.Type.UNKNOWN, adapter = defaultJsonAdapter)
+            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = defaultJsonAdapter),
+            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = defaultJsonAdapter)
         )
 
         assertEquals(
-            JsonPrimitive("123", JsonPrimitive.Type.NUMBER, adapter = defaultJsonAdapter),
-            JsonPrimitive("123", JsonPrimitive.Type.UNKNOWN, adapter = defaultJsonAdapter)
+            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.NUMBER, adapter = defaultJsonAdapter),
+            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = defaultJsonAdapter)
         )
 
         assertEquals(
-            JsonPrimitive("123", JsonPrimitive.Type.STRING, adapter = defaultJsonAdapter),
-            JsonPrimitive("123", JsonPrimitive.Type.UNKNOWN, adapter = defaultJsonAdapter)
+            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.STRING, adapter = defaultJsonAdapter),
+            JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = defaultJsonAdapter)
         )
     }
 

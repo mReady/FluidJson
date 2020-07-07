@@ -2,7 +2,7 @@ package net.mready.json
 
 import net.mready.json.adapters.KotlinxJsonAdapter
 import net.mready.json.internal.*
-import kotlin.reflect.KClass
+import kotlin.reflect.KType
 
 class JsonParseException(message: String, cause: Throwable) : RuntimeException(message, cause)
 
@@ -16,19 +16,19 @@ abstract class JsonAdapter {
 
     protected fun wrapInternal(value: Any?, path: JsonPath): FluidJson? {
         return when (value) {
-            null -> JsonNull(path, this)
-            is String -> JsonPrimitive(value, JsonPrimitive.Type.STRING, path, this)
-            is Number -> JsonPrimitive(value.toString(), JsonPrimitive.Type.NUMBER, path, this)
-            is Boolean -> JsonPrimitive(value.toString(), JsonPrimitive.Type.BOOLEAN, path, this)
+            null -> JsonNullElement(path, this)
+            is String -> JsonPrimitiveElement(value, JsonPrimitiveElement.Type.STRING, path, this)
+            is Number -> JsonPrimitiveElement(value.toString(), JsonPrimitiveElement.Type.NUMBER, path, this)
+            is Boolean -> JsonPrimitiveElement(value.toString(), JsonPrimitiveElement.Type.BOOLEAN, path, this)
             is JsonElement -> value.copy(path, this)
-            is Collection<*> -> JsonArray(
+            is Collection<*> -> JsonArrayElement(
                 content = value.mapIndexedTo(mutableListOf()) { index, item ->
                     wrap(item, path + index)
                 },
                 path = path,
                 adapter = this
             )
-            is Map<*, *> -> JsonObject(
+            is Map<*, *> -> JsonObjectElement(
                 content = value.entries.fold(mutableMapOf()) { acc, v ->
                     acc[v.key.toString()] = wrap(v.value, path + v.key.toString());
                     return@fold acc
@@ -41,10 +41,10 @@ abstract class JsonAdapter {
     }
 
     @ExperimentalUserTypes
-    abstract fun <T : Any> decodeObject(json: FluidJson, cls: KClass<T>): T
+    abstract fun <T : Any> decodeObject(json: FluidJson, type: KType): T
 
     @ExperimentalUserTypes
-    abstract fun encodeObject(value: Any?): FluidJson
+    abstract fun encodeObject(value: Any?, type: KType): FluidJson
 }
 
 @PublishedApi

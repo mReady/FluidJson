@@ -13,7 +13,7 @@ class JsonTypesTests {
     fun emptyJson() {
         val json = FluidJson()
 
-        assertTrue { json is JsonEmpty }
+        assertTrue { json is JsonEmptyElement }
         assertEquals(true, json.isNull)
         assertEquals(null, json.orNull)
 
@@ -39,13 +39,13 @@ class JsonTypesTests {
     fun nullJson() {
         val json = FluidJson(null)
 
-        assertTrue { json is JsonNull }
+        assertTrue { json is JsonNullElement }
         assertEquals(true, json.isNull)
         assertEquals(null, json.orNull)
 
         assertFailsOn(PATH_ROOT)  { json.size }
-        assertTrue { json["test"] is JsonError }
-        assertTrue { json[0] is JsonError }
+        assertTrue { json["test"] is JsonErrorElement }
+        assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(null, json.stringOrNull)
         assertFailsOn(PATH_ROOT) { json.string }
@@ -65,15 +65,15 @@ class JsonTypesTests {
 
     @Test
     fun errorJson() {
-        val json: FluidJson = JsonError(FluidJsonException("test", JsonPath.ROOT), adapter = adapter)
+        val json: FluidJson = JsonErrorElement(FluidJsonException("test", JsonPath.ROOT), adapter = adapter)
 
-        assertTrue { json is JsonError }
+        assertTrue { json is JsonErrorElement }
         assertEquals(true, json.isNull)
         assertEquals(null, json.orNull)
 
         assertFailsOn(PATH_ROOT)  { json.size }
-        assertTrue { json["test"] is JsonError }
-        assertTrue { json[0] is JsonError }
+        assertTrue { json["test"] is JsonErrorElement }
+        assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(null, json.stringOrNull)
         assertFailsOn(PATH_ROOT) { json.string }
@@ -96,13 +96,13 @@ class JsonTypesTests {
         val string = "test"
         val json = FluidJson(string)
 
-        assertTrue { json is JsonPrimitive }
+        assertTrue { json is JsonPrimitiveElement }
         assertEquals(false, json.isNull)
         assertEquals(json, json.orNull)
 
         assertFailsOn(PATH_ROOT)  { json.size }
-        assertTrue { json["test"] is JsonError }
-        assertTrue { json[0] is JsonError }
+        assertTrue { json["test"] is JsonErrorElement }
+        assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(string, json.stringOrNull)
         assertEquals(string, json.string)
@@ -125,13 +125,13 @@ class JsonTypesTests {
         val number = 1
         val json = FluidJson(number)
 
-        assertTrue { json is JsonPrimitive }
+        assertTrue { json is JsonPrimitiveElement }
         assertEquals(false, json.isNull)
         assertEquals(json, json.orNull)
 
         assertFailsOn(PATH_ROOT)  { json.size }
-        assertTrue { json["test"] is JsonError }
-        assertTrue { json[0] is JsonError }
+        assertTrue { json["test"] is JsonErrorElement }
+        assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(null, json.stringOrNull)
         assertFailsOn(PATH_ROOT) { json.string }
@@ -154,13 +154,13 @@ class JsonTypesTests {
         val number = 1L
         val json = FluidJson(number)
 
-        assertTrue { json is JsonPrimitive }
+        assertTrue { json is JsonPrimitiveElement }
         assertEquals(false, json.isNull)
         assertEquals(json, json.orNull)
 
         assertFailsOn(PATH_ROOT)  { json.size }
-        assertTrue { json["test"] is JsonError }
-        assertTrue { json[0] is JsonError }
+        assertTrue { json["test"] is JsonErrorElement }
+        assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(null, json.stringOrNull)
         assertFailsOn(PATH_ROOT) { json.string }
@@ -183,13 +183,13 @@ class JsonTypesTests {
         val number = 1.0
         val json = FluidJson(number)
 
-        assertTrue { json is JsonPrimitive }
+        assertTrue { json is JsonPrimitiveElement }
         assertEquals(false, json.isNull)
         assertEquals(json, json.orNull)
 
         assertFailsOn(PATH_ROOT)  { json.size }
-        assertTrue { json["test"] is JsonError }
-        assertTrue { json[0] is JsonError }
+        assertTrue { json["test"] is JsonErrorElement }
+        assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(null, json.stringOrNull)
         assertFailsOn(PATH_ROOT) { json.string }
@@ -212,13 +212,13 @@ class JsonTypesTests {
         val json = jsonObject {
         }
 
-        assertTrue { json is JsonObject }
+        assertTrue { json is JsonObjectElement }
         assertEquals(false, json.isNull)
         assertEquals(json, json.orNull)
 
         assertEquals(0, json.size)
-        assertTrue { json["test"] is JsonEmpty }
-        assertTrue { json[0] is JsonError }
+        assertTrue { json["test"] is JsonEmptyElement }
+        assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(null, json.stringOrNull)
         assertFailsOn(PATH_ROOT) { json.string }
@@ -241,13 +241,13 @@ class JsonTypesTests {
         val json = jsonArray {
         }
 
-        assertTrue { json is JsonArray }
+        assertTrue { json is JsonArrayElement }
         assertEquals(false, json.isNull)
         assertEquals(json, json.orNull)
 
         assertEquals(0, json.size)
-        assertTrue { json["test"] is JsonError }
-        assertTrue { json[0] is JsonEmpty }
+        assertTrue { json["test"] is JsonErrorElement }
+        assertTrue { json[0] is JsonEmptyElement }
 
         assertEquals(null, json.stringOrNull)
         assertFailsOn(PATH_ROOT) { json.string }

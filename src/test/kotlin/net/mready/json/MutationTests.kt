@@ -25,25 +25,25 @@ class MutationTests {
             "a" value 1
         }
 
-        assertTrue { json["null"] is JsonNull }
+        assertTrue { json["null"] is JsonNullElement }
         assertEquals(null, json["null"].orNull)
 
-        assertTrue { json["string"] is JsonPrimitive }
+        assertTrue { json["string"] is JsonPrimitiveElement }
         assertEquals("string", json["string"].string)
 
-        assertTrue { json["int"] is JsonPrimitive }
+        assertTrue { json["int"] is JsonPrimitiveElement }
         assertEquals(1, json["int"].int)
 
-        assertTrue { json["long"] is JsonPrimitive }
+        assertTrue { json["long"] is JsonPrimitiveElement }
         assertEquals(1L, json["long"].long)
 
-        assertTrue { json["bool"] is JsonPrimitive }
+        assertTrue { json["bool"] is JsonPrimitiveElement }
         assertEquals(true, json["bool"].bool)
 
-        assertTrue { json["array"] is JsonArray }
+        assertTrue { json["array"] is JsonArrayElement }
         assertEquals(listOf(1, 2, 3), json["array"].array.map { it.int })
 
-        assertTrue { json["obj"] is JsonObject }
+        assertTrue { json["obj"] is JsonObjectElement }
         assertEquals(mapOf<String, Int>("a" to 1), json["obj"].obj.mapValues { it.value.int })
 
         assertEquals("""{"null":null,"string":"string","int":1,"long":1,"double":1.0,"bool":true,"array":[1,2,3],"obj":{"a":1}}""", adapter.stringify(json))
@@ -93,7 +93,7 @@ class MutationTests {
         json[5] = 5
         json.array.take(5).forEach {
             assertNull(it.orNull)
-            assertTrue { it is JsonEmpty }
+            assertTrue { it is JsonEmptyElement }
         }
 
         json[2] = 2

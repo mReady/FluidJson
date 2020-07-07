@@ -1,8 +1,8 @@
 import java.util.Properties
 
 plugins {
-    kotlin("jvm") version "1.3.70"
-    kotlin("plugin.serialization") version "1.3.70"
+    kotlin("jvm") version "1.4-M3"
+    kotlin("plugin.serialization") version "1.4-M3"
     id("com.vanniktech.maven.publish") version "0.9.0"
 }
 
@@ -10,6 +10,7 @@ tasks {
     compileKotlin {
         kotlinOptions.freeCompilerArgs = listOf(
             "-Xopt-in=kotlin.RequiresOptIn",
+            "-Xopt-in=kotlin.ExperimentalStdlibApi",
             "-XXLanguage:+InlineClasses",
             "-progressive"
         )
@@ -18,6 +19,7 @@ tasks {
     compileTestKotlin {
         kotlinOptions.freeCompilerArgs = listOf(
             "-Xopt-in=kotlin.RequiresOptIn",
+            "-Xopt-in=kotlin.ExperimentalStdlibApi",
             "-XXLanguage:+InlineClasses",
             "-progressive"
         )
@@ -51,8 +53,10 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk7"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0-1.4-M3")
 
     testImplementation("junit:junit:4.12")
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.2")
+    testImplementation(kotlin("reflect"))
     testImplementation(kotlin("test-junit"))
 }
