@@ -62,7 +62,7 @@ open class KotlinxJsonAdapter(
 
     @OptIn(UnsafeSerializationApi::class)
     @ExperimentalUserTypes
-    override fun <T : Any> decodeObject(json: FluidJson, type: KType): T {
+    override fun <T : Any> fromJson(json: FluidJson, type: KType): T {
         return jsonSerializer.fromJson(
             jsonSerializer.context.getContextualOrDefault(type),
             json.toKotlinJsonElement()
@@ -71,10 +71,28 @@ open class KotlinxJsonAdapter(
 
     @OptIn(UnsafeSerializationApi::class)
     @ExperimentalUserTypes
-    override fun encodeObject(value: Any?, type: KType): FluidJson {
+    override fun toJson(value: Any?, type: KType): FluidJson {
         return value?.let {
             val serializer = jsonSerializer.context.getContextualOrDefault<Any>(type)
             FluidJson.from(jsonSerializer.toJson(serializer, it))
         } ?: JsonNullElement(adapter = this)
+    }
+
+    @OptIn(UnsafeSerializationApi::class)
+    @ExperimentalUserTypes
+    override fun <T : Any> decodeObject(string: String, type: KType): T {
+        return jsonSerializer.parse(
+            jsonSerializer.context.getContextualOrDefault(type),
+            string
+        )
+    }
+
+    @OptIn(UnsafeSerializationApi::class)
+    @ExperimentalUserTypes
+    override fun encodeObject(value: Any?, type: KType): String {
+        return value?.let {
+            val serializer = jsonSerializer.context.getContextualOrDefault<Any>(type)
+            jsonSerializer.stringify(serializer, it)
+        } ?: "null"
     }
 }

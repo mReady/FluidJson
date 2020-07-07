@@ -46,7 +46,6 @@ class ReferenceTests(private val adapter: JsonAdapter) {
     fun test() {
         val json: FluidJson = FluidJson.ref(C(B()), adapter = adapter)
         println(json.value<C>())
-        //println(Json.stringify(json))
         println(json.toJsonString())
 
         val json2 = adapter.parse(json.toJsonString())
@@ -66,6 +65,8 @@ class ReferenceTests(private val adapter: JsonAdapter) {
         val json4 = FluidJson.ref(W(1), adapter = adapter)
         println(json4.toJsonString())
 
+        println(adapter.encodeObject(listOf(1, 2, 3)))
+        println(adapter.decodeObject<List<Int>>("""[1, 2, 3]""").toString())
 
     }
 }

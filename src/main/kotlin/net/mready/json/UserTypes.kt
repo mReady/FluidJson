@@ -7,7 +7,16 @@ import kotlin.reflect.typeOf
 annotation class ExperimentalUserTypes
 
 @ExperimentalUserTypes
-inline fun <reified T : Any> JsonAdapter.decodeObject(json: FluidJson): T = decodeObject(json, typeOf<T>())
+inline fun <reified T : Any> JsonAdapter.fromJson(json: FluidJson): T = fromJson(json, typeOf<T>())
+
+@ExperimentalUserTypes
+inline fun <reified T : Any?> JsonAdapter.toJson(value: T): FluidJson = toJson(value, typeOf<T>())
+
+@ExperimentalUserTypes
+inline fun <reified T : Any> JsonAdapter.decodeObject(string: String): T = decodeObject(string, typeOf<T>())
+
+@ExperimentalUserTypes
+inline fun <reified T : Any?> JsonAdapter.encodeObject(value: T): String = encodeObject(value, typeOf<T>())
 
 @ExperimentalUserTypes
 inline fun <reified T: Any> FluidJson.Companion.ref(
@@ -25,14 +34,14 @@ inline fun <reified T : Any> FluidJson.valueOrNull(): T? {
         is JsonErrorElement -> null
         is JsonRefElement -> select(
             valueTransform = { it as? T },
-            jsonTransform = { runCatching { adapter.decodeObject<T>(it, typeOf<T>()) }.getOrNull() }
+            jsonTransform = { runCatching { adapter.fromJson<T>(it, typeOf<T>()) }.getOrNull() }
         )
         is JsonArrayElement, is JsonObjectElement, is JsonPrimitiveElement -> runCatching {
-            adapter.decodeObject<T>(this, typeOf<T>())
+            adapter.fromJson<T>(this, typeOf<T>())
         }.getOrNull()
         is JsonEmptyElement -> when (val wrapped = wrapped) {
             null -> null
-            else -> runCatching { adapter.decodeObject<T>(wrapped, typeOf<T>()) }.getOrNull()
+            else -> runCatching { adapter.fromJson<T>(wrapped, typeOf<T>()) }.getOrNull()
         }
     }
 }
@@ -45,16 +54,16 @@ inline fun <reified T : Any> FluidJson.value(): T {
         is JsonErrorElement -> null
         is JsonRefElement -> select(
             valueTransform = { it as? T },
-            jsonTransform = { runCatching { adapter.decodeObject<T>(it, typeOf<T>()) }.getOrNull() }
+            jsonTransform = { runCatching { adapter.fromJson<T>(it, typeOf<T>()) }.getOrNull() }
         )
         is JsonArrayElement,
         is JsonObjectElement,
         is JsonPrimitiveElement
-        -> adapter.decodeObject<T>(this, typeOf<T>())
+        -> adapter.fromJson<T>(this, typeOf<T>())
 
         is JsonEmptyElement -> when (val wrapped = wrapped) {
             null -> null
-            else -> adapter.decodeObject<T>(wrapped, typeOf<T>())
+            else -> adapter.fromJson<T>(wrapped, typeOf<T>())
         }
     } ?: this.throwInvalidType(T::class.simpleName.orEmpty())
 }

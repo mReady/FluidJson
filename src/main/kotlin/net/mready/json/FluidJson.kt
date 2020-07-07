@@ -239,7 +239,7 @@ abstract class FluidJson internal constructor(
         return adapter.stringify(this)
     }
 
-    private fun Any?.toJson(path: JsonPath): FluidJson {
+    private fun Any?.asJson(path: JsonPath): FluidJson {
         return adapter.wrap(this, path)
     }
 
@@ -257,21 +257,21 @@ abstract class FluidJson internal constructor(
      *
      * @throws [FluidJsonException] if this element does not represent an object
      */
-    operator fun set(key: String, value: String?) = set(key, value.toJson(path + key))
+    operator fun set(key: String, value: String?) = set(key, value.asJson(path + key))
 
     /**
      * Associates a json element representing the given [value] with the specified [key].
      *
      * @throws [FluidJsonException] if this element does not represent an object
      */
-    operator fun set(key: String, value: Number?) = set(key, value.toJson(path + key))
+    operator fun set(key: String, value: Number?) = set(key, value.asJson(path + key))
 
     /**
      * Associates a json element representing the given [value] with the specified [key].
      *
      * @throws [FluidJsonException] if this element does not represent an object
      */
-    operator fun set(key: String, value: Boolean?) = set(key, value.toJson(path + key))
+    operator fun set(key: String, value: Boolean?) = set(key, value.asJson(path + key))
 
     /**
      * Associates a json element representing the given [value] with the specified [key].
@@ -279,7 +279,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an object
      */
     @JvmName("setValues")
-    operator fun set(key: String, value: Collection<FluidJson?>?) = set(key, value.toJson(path + key))
+    operator fun set(key: String, value: Collection<FluidJson?>?) = set(key, value.asJson(path + key))
 
     /**
      * Associates a json element representing the given [value] with the specified [key].
@@ -287,7 +287,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an object
      */
     @JvmName("setStrings")
-    operator fun set(key: String, value: Collection<String?>?) = set(key, value.toJson(path + key))
+    operator fun set(key: String, value: Collection<String?>?) = set(key, value.asJson(path + key))
 
     /**
      * Associates a json element representing the given [value] with the specified [key].
@@ -295,7 +295,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an object
      */
     @JvmName("setNumbers")
-    operator fun set(key: String, value: Collection<Number?>?) = set(key, value.toJson(path + key))
+    operator fun set(key: String, value: Collection<Number?>?) = set(key, value.asJson(path + key))
 
     /**
      * Adds a json element representing `null` the the specified [index].
@@ -309,21 +309,21 @@ abstract class FluidJson internal constructor(
      *
      * @throws [FluidJsonException] if this element does not represent an array
      */
-    operator fun set(index: Int, value: String?) = set(index, value.toJson(path + index))
+    operator fun set(index: Int, value: String?) = set(index, value.asJson(path + index))
 
     /**
      * Adds a json element representing the given [value] the the specified [index].
      *
      * @throws [FluidJsonException] if this element does not represent an array
      */
-    operator fun set(index: Int, value: Number?) = set(index, value.toJson(path + index))
+    operator fun set(index: Int, value: Number?) = set(index, value.asJson(path + index))
 
     /**
      * Adds a json element representing the given [value] the the specified [index].
      *
      * @throws [FluidJsonException] if this element does not represent an array
      */
-    operator fun set(index: Int, value: Boolean?) = set(index, value.toJson(path + index))
+    operator fun set(index: Int, value: Boolean?) = set(index, value.asJson(path + index))
 
     /**
      * Adds a json element representing the given [value] the the specified [index].
@@ -331,7 +331,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an array
      */
     @JvmName("setValues")
-    operator fun set(index: Int, value: Collection<FluidJson>?) = set(index, value.toJson(path + index))
+    operator fun set(index: Int, value: Collection<FluidJson>?) = set(index, value.asJson(path + index))
 
     /**
      * Adds a json element representing the given [value] the the specified [index].
@@ -339,7 +339,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an array
      */
     @JvmName("setStrings")
-    operator fun set(index: Int, value: Collection<String?>?) = set(index, value.toJson(path + index))
+    operator fun set(index: Int, value: Collection<String?>?) = set(index, value.asJson(path + index))
 
     /**
      * Adds a json element representing the given [value] the the specified [index].
@@ -347,7 +347,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an array
      */
     @JvmName("setNumbers")
-    operator fun set(index: Int, value: Collection<Number?>?) = set(index, value.toJson(path + index))
+    operator fun set(index: Int, value: Collection<Number?>?) = set(index, value.asJson(path + index))
 
     /**
      * Adds a json element representing `null`.
@@ -361,21 +361,21 @@ abstract class FluidJson internal constructor(
      *
      * @throws [FluidJsonException] if this element does not represent an array
      */
-    operator fun plusAssign(value: String?) = plusAssign(value.toJson(path + size))
+    operator fun plusAssign(value: String?) = plusAssign(value.asJson(path + size))
 
     /**
      * Adds a json element representing the given [value].
      *
      * @throws [FluidJsonException] if this element does not represent an array
      */
-    operator fun plusAssign(value: Number?) = plusAssign(value.toJson(path + size))
+    operator fun plusAssign(value: Number?) = plusAssign(value.asJson(path + size))
 
     /**
      * Adds a json element representing the given [value].
      *
      * @throws [FluidJsonException] if this element does not represent an array
      */
-    operator fun plusAssign(value: Boolean?) = plusAssign(value.toJson(path + size))
+    operator fun plusAssign(value: Boolean?) = plusAssign(value.asJson(path + size))
 
     /**
      * Adds a json element representing the given [value].
@@ -383,7 +383,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an array
      */
     @JvmName("plusValues")
-    operator fun plusAssign(value: Collection<FluidJson>?) = plusAssign(value.toJson(path + size))
+    operator fun plusAssign(value: Collection<FluidJson>?) = plusAssign(value.asJson(path + size))
 
     /**
      * Adds a json element representing the given [value].
@@ -391,7 +391,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an array
      */
     @JvmName("plusStrings")
-    operator fun plusAssign(value: Collection<String?>?) = plusAssign(value.toJson(path + size))
+    operator fun plusAssign(value: Collection<String?>?) = plusAssign(value.asJson(path + size))
 
     /**
      * Adds a json element representing the given [value].
@@ -399,7 +399,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an array
      */
     @JvmName("plusNumbers")
-    operator fun plusAssign(value: Collection<Number?>?) = plusAssign(value.toJson(path + size))
+    operator fun plusAssign(value: Collection<Number?>?) = plusAssign(value.asJson(path + size))
 }
 
 class FluidJsonException(

@@ -41,10 +41,16 @@ abstract class JsonAdapter {
     }
 
     @ExperimentalUserTypes
-    abstract fun <T : Any> decodeObject(json: FluidJson, type: KType): T
+    abstract fun <T : Any> fromJson(json: FluidJson, type: KType): T
 
     @ExperimentalUserTypes
-    abstract fun encodeObject(value: Any?, type: KType): FluidJson
+    abstract fun toJson(value: Any?, type: KType): FluidJson
+
+    @ExperimentalUserTypes
+    abstract fun <T : Any> decodeObject(string: String, type: KType): T
+
+    @ExperimentalUserTypes
+    abstract fun encodeObject(value: Any?, type: KType): String
 }
 
 @PublishedApi

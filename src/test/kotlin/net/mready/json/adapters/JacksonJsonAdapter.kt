@@ -46,13 +46,23 @@ object JacksonJsonAdapter : JsonAdapter() {
 
     @OptIn(ExperimentalStdlibApi::class)
     @ExperimentalUserTypes
-    override fun <T : Any> decodeObject(json: FluidJson, type: KType): T {
-        return objectMapper.readValue<T>(stringify(json), objectMapper.constructType(type.javaType))
+    override fun <T : Any> fromJson(json: FluidJson, type: KType): T {
+        return objectMapper.readValue(stringify(json), objectMapper.constructType(type.javaType))
     }
 
     @ExperimentalUserTypes
-    override fun encodeObject(value: Any?, type: KType): FluidJson {
+    override fun toJson(value: Any?, type: KType): FluidJson {
         return parse(objectMapper.writeValueAsString(value))
+    }
+
+    @ExperimentalUserTypes
+    override fun <T : Any> decodeObject(string: String, type: KType): T {
+        return objectMapper.readValue(string, objectMapper.constructType(type.javaType))
+    }
+
+    @ExperimentalUserTypes
+    override fun encodeObject(value: Any?, type: KType): String {
+        return objectMapper.writeValueAsString(value)
     }
 }
 

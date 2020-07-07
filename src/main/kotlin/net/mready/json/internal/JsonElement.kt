@@ -335,7 +335,7 @@ class JsonRefElement(
 
     @PublishedApi
     internal val wrapped: JsonElement by lazy {
-        val json = adapter.encodeObject(content, type).copyIfNeeded(path, adapter) as JsonElement
+        val json = adapter.toJson(content, type).copyIfNeeded(path, adapter) as JsonElement
         this.content = null
         return@lazy json
     }

@@ -42,7 +42,7 @@ private fun toJsonElement(value: FluidJson): KJsonElement {
             toJsonElement(it)
         } ?: KJsonNull
         is JsonRefElement -> value.select(
-            valueTransform = { toJsonElement(value.adapter.encodeObject(it, value.type)) },
+            valueTransform = { toJsonElement(value.adapter.toJson(it, value.type)) },
             jsonTransform = { toJsonElement(it) }
         )
         is JsonErrorElement -> throw AssertionError()
