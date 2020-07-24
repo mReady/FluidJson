@@ -2,6 +2,7 @@ package net.mready.json
 
 import net.mready.json.internal.*
 import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 class JsonParseException(message: String, cause: Throwable) : RuntimeException(message, cause)
 
@@ -43,15 +44,28 @@ abstract class JsonAdapter {
         }
     }
 
+
     @ExperimentalUserTypes
     abstract fun <T : Any> fromJson(json: FluidJson, type: KType): T
+
+    @ExperimentalUserTypes
+    inline fun <reified T : Any> fromJson(json: FluidJson): T = fromJson(json, typeOf<T>())
 
     @ExperimentalUserTypes
     abstract fun toJson(value: Any?, type: KType): FluidJson
 
     @ExperimentalUserTypes
+    inline fun <reified T : Any?> toJson(value: T): FluidJson = toJson(value, typeOf<T>())
+
+    @ExperimentalUserTypes
     abstract fun <T : Any> decodeObject(string: String, type: KType): T
 
     @ExperimentalUserTypes
+    inline fun <reified T : Any> decodeObject(string: String): T = decodeObject(string, typeOf<T>())
+
+    @ExperimentalUserTypes
     abstract fun encodeObject(value: Any?, type: KType): String
+
+    @ExperimentalUserTypes
+    inline fun <reified T : Any?> encodeObject(value: T): String = encodeObject(value, typeOf<T>())
 }

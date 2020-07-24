@@ -44,7 +44,10 @@ class ReferenceTests(private val adapter: JsonAdapter) {
 
     @Test
     fun test() {
-        val json: FluidJson = FluidJson.ref(C(B()), adapter = adapter)
+        println(FluidJson(1).value<Int>())
+
+
+        val json: FluidJson = adapter.ref(C(B()))
         println(json.value<C>())
         println(json.toJsonString())
 
@@ -54,7 +57,7 @@ class ReferenceTests(private val adapter: JsonAdapter) {
         json2["a"] = 1
         println(json2.value<T1>())
 
-        val json3 = FluidJson.ref(T1(1), adapter = adapter)
+        val json3 = adapter.ref(T1(1))
         println(json3["a"].int)
         json3["b"] = 2
         println(json3.value<T2>())
@@ -62,7 +65,7 @@ class ReferenceTests(private val adapter: JsonAdapter) {
         val json5 = adapter.parse("""{"v": "asd"}""")
         println(json5.value<W<String>>())
 
-        val json4 = FluidJson.ref(W(1), adapter = adapter)
+        val json4 = adapter.ref(W(1))
         println(json4.toJsonString())
 
         println(adapter.encodeObject(listOf(1, 2, 3)))

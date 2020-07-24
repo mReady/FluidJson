@@ -7,24 +7,11 @@ import kotlin.reflect.typeOf
 annotation class ExperimentalUserTypes
 
 @ExperimentalUserTypes
-inline fun <reified T : Any> JsonAdapter.fromJson(json: FluidJson): T = fromJson(json, typeOf<T>())
-
-@ExperimentalUserTypes
-inline fun <reified T : Any?> JsonAdapter.toJson(value: T): FluidJson = toJson(value, typeOf<T>())
-
-@ExperimentalUserTypes
-inline fun <reified T : Any> JsonAdapter.decodeObject(string: String): T = decodeObject(string, typeOf<T>())
-
-@ExperimentalUserTypes
-inline fun <reified T : Any?> JsonAdapter.encodeObject(value: T): String = encodeObject(value, typeOf<T>())
-
-@ExperimentalUserTypes
-inline fun <reified T : Any> FluidJson.Companion.ref(
+inline fun <reified T : Any> JsonAdapter.ref(
     value: T?,
     path: JsonPath = JsonPath.ROOT,
-    adapter: JsonAdapter = FluidJson
 ): FluidJson =
-    value?.let { JsonRefElement(it, typeOf<T>(), adapter = adapter) } ?: JsonNullElement(path, adapter)
+    value?.let { JsonRefElement(it, typeOf<T>(), adapter = this) } ?: JsonNullElement(path, this)
 
 @ExperimentalUserTypes
 inline fun <reified T : Any> FluidJson.valueOrNull(): T? {
