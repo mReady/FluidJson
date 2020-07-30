@@ -3,9 +3,7 @@
 package net.mready.json.adapters
 
 import kotlinx.serialization.UnsafeSerializationApi
-import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.modules.EmptyModule
-import kotlinx.serialization.modules.SerialModule
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.getContextualOrDefault
 import net.mready.json.ExperimentalUserTypes
 import net.mready.json.FluidJson
@@ -20,24 +18,19 @@ import kotlin.reflect.KType
 typealias KJson = kotlinx.serialization.json.Json
 
 open class KotlinxJsonAdapter(
-    private val serialModule: SerialModule = EmptyModule,
-    private val config: JsonConfiguration = defaultJsonConfiguration
+    private val jsonSerializer: KJson = defaultSerializer
 ) : JsonAdapter() {
     companion object {
-        @Suppress("EXPERIMENTAL_API_USAGE")
-        val defaultJsonConfiguration = JsonConfiguration(
-            prettyPrint = false,
-            ignoreUnknownKeys = true,
+        val defaultSerializer = Json {
+            prettyPrint = false
+            ignoreUnknownKeys = true
             useArrayPolymorphism = true
-        )
+        }
     }
 
     protected val serializationStrategy = FluidJsonSerialization
-
     @Suppress("LeakingThis")
     protected val deserializationStrategy = FluidJsonDeserialization(this)
-
-    protected val jsonSerializer = KJson(config, serialModule)
 
     override fun parse(string: String): FluidJson {
         val jsonString = string.trim()
@@ -50,21 +43,21 @@ open class KotlinxJsonAdapter(
         }
 
         try {
-            return jsonSerializer.parse(deserializationStrategy, jsonString)
+            return jsonSerializer.decodeFromString(deserializationStrategy, jsonString)
         } catch (e: Throwable) {
             throw JsonParseException(e.message ?: "Unable to parse JSON", e)
         }
     }
 
     override fun stringify(json: FluidJson): String {
-        return jsonSerializer.stringify(serializationStrategy, json)
+        return jsonSerializer.encodeToString(serializationStrategy, json)
     }
 
     @OptIn(UnsafeSerializationApi::class)
     @ExperimentalUserTypes
     override fun <T : Any> fromJson(json: FluidJson, type: KType): T {
-        return jsonSerializer.fromJson(
-            jsonSerializer.context.getContextualOrDefault(type),
+        return jsonSerializer.decodeFromJsonElement(
+            jsonSerializer.serializersModule.getContextualOrDefault(type),
             json.toKotlinJsonElement()
         )
     }
@@ -73,16 +66,16 @@ open class KotlinxJsonAdapter(
     @ExperimentalUserTypes
     override fun toJson(value: Any?, type: KType): FluidJson {
         return value?.let {
-            val serializer = jsonSerializer.context.getContextualOrDefault<Any>(type)
-            FluidJson.fromKotlinJsonElement(jsonSerializer.toJson(serializer, it))
+            val serializer = jsonSerializer.serializersModule.getContextualOrDefault<Any>(type)
+            FluidJson.fromKotlinJsonElement(jsonSerializer.encodeToJsonElement(serializer, it))
         } ?: JsonNullElement(adapter = this)
     }
 
     @OptIn(UnsafeSerializationApi::class)
     @ExperimentalUserTypes
     override fun <T : Any> decodeObject(string: String, type: KType): T {
-        return jsonSerializer.parse(
-            jsonSerializer.context.getContextualOrDefault(type),
+        return jsonSerializer.decodeFromString(
+            jsonSerializer.serializersModule.getContextualOrDefault(type),
             string
         )
     }
@@ -91,8 +84,8 @@ open class KotlinxJsonAdapter(
     @ExperimentalUserTypes
     override fun encodeObject(value: Any?, type: KType): String {
         return value?.let {
-            val serializer = jsonSerializer.context.getContextualOrDefault<Any>(type)
-            jsonSerializer.stringify(serializer, it)
+            val serializer = jsonSerializer.serializersModule.getContextualOrDefault<Any>(type)
+            jsonSerializer.encodeToString(serializer, it)
         } ?: "null"
     }
 }

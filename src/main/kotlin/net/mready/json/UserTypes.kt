@@ -41,7 +41,7 @@ inline fun <reified T : Any> FluidJson.value(): T {
         is JsonErrorElement -> null
         is JsonRefElement -> select(
             valueTransform = { it as? T },
-            jsonTransform = { runCatching { adapter.fromJson<T>(it, typeOf<T>()) }.getOrNull() }
+            jsonTransform = { adapter.fromJson<T>(it, typeOf<T>()) }
         )
         is JsonArrayElement,
         is JsonObjectElement,

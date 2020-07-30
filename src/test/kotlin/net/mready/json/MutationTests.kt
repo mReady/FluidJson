@@ -155,6 +155,7 @@ class MutationTests {
         )
     }
 
+    @Test
     fun deleteObjectKey() {
         val json = jsonObject {
             "hello" value "world"
@@ -165,15 +166,16 @@ class MutationTests {
         assertTrue { json["hello"].isNull }
     }
 
+    @Test
     fun deleteArrayIndex() {
         val json = jsonArray {
             array[0] = 1
             array[1] = 2
-            array[3] = 3
+            array[2] = 3
         }
 
-        assertEquals(listOf(1, 2, 3), json["hello"].array.map { it.int })
+        assertEquals(listOf(1, 2, 3), json.array.map { it.int })
         json.delete(1)
-        assertEquals(listOf(1, 3), json["hello"].array.map { it.int })
+        assertEquals(listOf(1, 3), json.array.map { it.int })
     }
 }
