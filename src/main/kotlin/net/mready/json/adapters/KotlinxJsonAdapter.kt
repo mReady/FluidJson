@@ -5,10 +5,7 @@ package net.mready.json.adapters
 import kotlinx.serialization.UnsafeSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.getContextualOrDefault
-import net.mready.json.ExperimentalUserTypes
-import net.mready.json.FluidJson
-import net.mready.json.JsonAdapter
-import net.mready.json.JsonParseException
+import net.mready.json.*
 import net.mready.json.internal.JsonEmptyElement
 import net.mready.json.internal.JsonNullElement
 import net.mready.json.internal.JsonPath
@@ -18,8 +15,9 @@ import kotlin.reflect.KType
 typealias KJson = kotlinx.serialization.json.Json
 
 open class KotlinxJsonAdapter(
-    private val jsonSerializer: KJson = defaultSerializer
-) : JsonAdapter() {
+    private val jsonSerializer: KJson = defaultSerializer,
+    transformers: Set<JsonTransformer> = setOf()
+) : JsonAdapter(transformers) {
     companion object {
         val defaultSerializer = Json {
             prettyPrint = false

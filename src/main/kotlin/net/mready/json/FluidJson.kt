@@ -269,7 +269,7 @@ abstract class FluidJson internal constructor(
         return adapter.stringify(this)
     }
 
-    private fun Any?.asJson(path: JsonPath): FluidJson {
+    private inline fun <reified T> T.asJson(path: JsonPath): FluidJson {
         return adapter.wrap(this, path)
     }
 
