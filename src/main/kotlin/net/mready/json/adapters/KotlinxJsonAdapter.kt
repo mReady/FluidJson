@@ -2,9 +2,9 @@
 
 package net.mready.json.adapters
 
-import kotlinx.serialization.UnsafeSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.getContextualOrDefault
+import kotlinx.serialization.serializer
 import net.mready.json.*
 import net.mready.json.internal.JsonEmptyElement
 import net.mready.json.internal.JsonNullElement
@@ -51,38 +51,34 @@ open class KotlinxJsonAdapter(
         return jsonSerializer.encodeToString(serializationStrategy, json)
     }
 
-    @OptIn(UnsafeSerializationApi::class)
     @ExperimentalUserTypes
     override fun <T : Any> fromJson(json: FluidJson, type: KType): T {
         return jsonSerializer.decodeFromJsonElement(
-            jsonSerializer.serializersModule.getContextualOrDefault(type),
+            jsonSerializer.serializersModule.serializer(type) as KSerializer<T>,
             json.toKotlinJsonElement()
         )
     }
 
-    @OptIn(UnsafeSerializationApi::class)
     @ExperimentalUserTypes
     override fun toJson(value: Any?, type: KType): FluidJson {
         return value?.let {
-            val serializer = jsonSerializer.serializersModule.getContextualOrDefault<Any>(type)
+            val serializer = jsonSerializer.serializersModule.serializer(type)
             FluidJson.fromKotlinJsonElement(jsonSerializer.encodeToJsonElement(serializer, it))
         } ?: JsonNullElement(adapter = this)
     }
 
-    @OptIn(UnsafeSerializationApi::class)
     @ExperimentalUserTypes
     override fun <T : Any> decodeObject(string: String, type: KType): T {
         return jsonSerializer.decodeFromString(
-            jsonSerializer.serializersModule.getContextualOrDefault(type),
+            jsonSerializer.serializersModule.serializer(type) as KSerializer<T>,
             string
         )
     }
 
-    @OptIn(UnsafeSerializationApi::class)
     @ExperimentalUserTypes
     override fun encodeObject(value: Any?, type: KType): String {
         return value?.let {
-            val serializer = jsonSerializer.serializersModule.getContextualOrDefault<Any>(type)
+            val serializer = jsonSerializer.serializersModule.serializer(type)
             jsonSerializer.encodeToString(serializer, it)
         } ?: "null"
     }

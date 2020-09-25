@@ -9,7 +9,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.modules.getContextualOrDefault
 import net.mready.json.ExperimentalUserTypes
 import net.mready.json.FluidJson
 import net.mready.json.JsonAdapter
@@ -109,7 +108,6 @@ class FluidJsonDeserialization(private val adapter: JsonAdapter) : Deserializati
 object FluidJsonSerialization : SerializationStrategy<FluidJson> {
     override val descriptor: SerialDescriptor = FluidJsonSerializer.descriptor
 
-    @OptIn(UnsafeSerializationApi::class)
     override fun serialize(encoder: Encoder, value: FluidJson) {
         if (value !is JsonElement) throw AssertionError()
         when (value) {
@@ -119,7 +117,7 @@ object FluidJsonSerialization : SerializationStrategy<FluidJson> {
             is JsonNullElement -> encoder.encodeSerializableValue(JsonNullSerializer, value)
             is JsonRefElement -> value.select(
                 valueTransform = {
-                    val serializer = encoder.serializersModule.getContextualOrDefault<Any>(value.type)
+                    val serializer = encoder.serializersModule.serializer(value.type)
                     encoder.encodeSerializableValue(serializer, it)
                 },
                 jsonTransform = {

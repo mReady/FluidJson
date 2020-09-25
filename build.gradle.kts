@@ -1,8 +1,8 @@
 import java.util.Properties
 
 plugins {
-    kotlin("jvm") version "1.4.0-rc"
-    kotlin("plugin.serialization") version "1.4.0-rc"
+    kotlin("jvm") version "1.4.0"
+    kotlin("plugin.serialization") version "1.4.0"
     id("com.vanniktech.maven.publish") version "0.9.0"
 }
 
@@ -53,7 +53,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk7"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:1.0-M1-1.4.0-rc")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0-RC")
 
     testImplementation("junit:junit:4.12")
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.2")
