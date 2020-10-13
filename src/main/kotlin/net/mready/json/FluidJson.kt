@@ -432,6 +432,14 @@ abstract class FluidJson internal constructor(
     operator fun plusAssign(value: Collection<Number?>?) = plusAssign(value.asJson(path + size))
 }
 
+fun List<FluidJson>.toJsonArray(adapter: JsonAdapter = FluidJson): FluidJson {
+    return JsonArrayElement(this.toMutableList(), adapter = adapter)
+}
+
+fun Map<String, FluidJson>.toJsonObject(adapter: JsonAdapter = FluidJson): FluidJson {
+    return JsonObjectElement(this.toMutableMap(), adapter = adapter)
+}
+
 class FluidJsonException(
     message: String,
     val path: JsonPath? = null,

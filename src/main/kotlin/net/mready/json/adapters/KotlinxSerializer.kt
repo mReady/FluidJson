@@ -80,7 +80,7 @@ private fun fromJsonElement(
 }
 
 object FluidJsonSerializer : KSerializer<FluidJson> {
-    @OptIn(InternalSerializationApi::class)
+    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
     override val descriptor = buildSerialDescriptor("FluidJson", PolymorphicKind.SEALED)
 
     override fun deserialize(decoder: Decoder): FluidJson {
@@ -94,10 +94,6 @@ object FluidJsonSerializer : KSerializer<FluidJson> {
 
 class FluidJsonDeserialization(private val adapter: JsonAdapter) : DeserializationStrategy<FluidJson> {
     override val descriptor: SerialDescriptor = FluidJsonSerializer.descriptor
-
-    override fun patch(decoder: Decoder, old: FluidJson): FluidJson {
-        throw AssertionError()
-    }
 
     override fun deserialize(decoder: Decoder): FluidJson {
         val input = decoder as JsonDecoder
@@ -117,6 +113,7 @@ object FluidJsonSerialization : SerializationStrategy<FluidJson> {
             is JsonNullElement -> encoder.encodeSerializableValue(JsonNullSerializer, value)
             is JsonRefElement -> value.select(
                 valueTransform = {
+                    // TODO: fallback to class based serializer if type is Any?
                     val serializer = encoder.serializersModule.serializer(value.type)
                     encoder.encodeSerializableValue(serializer, it)
                 },
@@ -153,10 +150,11 @@ private object JsonArraySerializer : SerializationStrategy<JsonArrayElement> {
 }
 
 private object JsonNullSerializer : SerializationStrategy<JsonNullElement> {
-    @OptIn(InternalSerializationApi::class)
+    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
     override val descriptor = buildSerialDescriptor("JsonNull", SerialKind.ENUM)
 
     override fun serialize(encoder: Encoder, value: JsonNullElement) {
+        @OptIn(ExperimentalSerializationApi::class)
         encoder.encodeNull()
     }
 }
