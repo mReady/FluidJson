@@ -52,16 +52,16 @@ class EqualityTests {
     @Test
     fun objectEquals() {
         assertEquals(jsonObject {
-            "a" value 1
+            obj["a"] = 1
         }, jsonObject {
-            "a" value 1
+            obj["a"] = 1
         })
 
         assertNotEquals(jsonObject {
-            "a" value 1
-            "b" value 2
+            obj["a"] = 1
+            obj["b"] = 2
         }, jsonObject {
-            "a" value 1
+            obj["a"] = 1
         })
 
         assertEquals(Json().apply {

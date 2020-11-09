@@ -10,7 +10,7 @@ class JsonErrorTests {
     @Test
     fun primitiveAsStructure() {
         val json = jsonObject {
-            "int" value 1
+            obj["int"] = 1
         }
 
         assertEquals(1, json["int"].int)
@@ -29,8 +29,8 @@ class JsonErrorTests {
     @Test
     fun structureAsPrimitive() {
         val json = jsonObject {
-            "obj" value jsonObject { }
-            "arr" value jsonArray { }
+            obj["obj"] = jsonObject { }
+            obj["arr"] = jsonArray { }
         }
 
         assertFailsOn(PATH_ROOT, "obj") { json["obj"].string }
@@ -40,8 +40,8 @@ class JsonErrorTests {
     @Test
     fun invalidStructureType() {
         val json = jsonObject {
-            "obj" value jsonObject { }
-            "arr" value jsonArray { }
+            obj["obj"] = jsonObject { }
+            obj["arr"] = jsonArray { }
         }
 
         assertFailsOn(PATH_ROOT, "obj") { json["obj"].array }
@@ -53,7 +53,7 @@ class JsonErrorTests {
     @Test
     fun nullAsPrimitive() {
         val json = jsonObject {
-            "null" value null
+            obj["null"] = null
         }
 
         assertEquals(true, json["null"].isNull)
@@ -68,7 +68,7 @@ class JsonErrorTests {
     @Test
     fun nullAsStructure() {
         val json = jsonObject {
-            "null" value null
+            obj["null"] = null
         }
 
         assertEquals(true, json["null"][0].isNull)
@@ -86,8 +86,8 @@ class JsonErrorTests {
     @Test
     fun outOfBounds() {
         val json = jsonObject {
-            "arr" jsonArray {}
-            "obj" jsonObject {}
+            obj["arr"] = jsonArray {}
+            obj["obj"] = jsonObject {}
         }
 
         assertFailsOn(PATH_ROOT, "arr") { json["arr"][10].string }
@@ -99,10 +99,10 @@ class JsonErrorTests {
     @Test
     fun complexStructurePath() {
         val json = jsonObject {
-            "inner1" jsonObject {
-                "arr1" jsonArray {
+            obj["inner1"] = jsonObject {
+                obj["arr1"] = jsonArray {
                     array += jsonObject {
-                        "inner2" jsonObject {
+                        obj["inner2"] = jsonObject {
                             obj["arr2"] = jsonArray {}
                         }
                     }

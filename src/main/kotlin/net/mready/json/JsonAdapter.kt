@@ -18,10 +18,10 @@ abstract class JsonAdapter(
     }
 
     inline fun <reified T> wrap(value: T, path: JsonPath = JsonPath.ROOT): FluidJson {
-        return wrapInternal(value, path, typeOf<T>())
+        return wrapInternal(value, typeOf<T>(), path)
     }
 
-    fun wrapInternal(value: Any?, path: JsonPath, type: KType): FluidJson {
+    fun wrapInternal(value: Any?, type: KType, path: JsonPath): FluidJson {
         return when (value) {
             null -> JsonNullElement(path, this)
             is JsonElement -> value.copyIfNeeded(path, this)

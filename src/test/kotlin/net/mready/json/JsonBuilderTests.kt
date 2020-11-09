@@ -18,7 +18,7 @@ class JsonBuilderTests(private val adapter: JsonAdapter) {
     @Test
     fun buildSimpleObject() {
         val json = jsonObject {
-            "hello" value "world"
+            obj["hello"] = "world"
         }
 
         assertEquals("world", json["hello"].string)
@@ -28,12 +28,12 @@ class JsonBuilderTests(private val adapter: JsonAdapter) {
     @Test
     fun objectWithPrimitiveValues() {
         val json = jsonObject {
-            "string" value "hello"
-            "int" value 1
-            "long" value 1L
-            "double" value 1.0
-            "bool" value true
-            "null" value null
+            obj["string"] = "hello"
+            obj["int"] = 1
+            obj["long"] = 1L
+            obj["double"] = 1.0
+            obj["bool"] = true
+            obj["null"] = null
         }
 
         assertEquals("hello", json["string"].string)
@@ -52,8 +52,8 @@ class JsonBuilderTests(private val adapter: JsonAdapter) {
     @Test
     fun objectWithNestedObject() {
         val json = jsonObject {
-            "obj" jsonObject {
-                "hello" value "world"
+            obj["obj"] = jsonObject {
+                obj["hello"] = "world"
             }
         }
 
@@ -65,7 +65,7 @@ class JsonBuilderTests(private val adapter: JsonAdapter) {
     @Test
     fun objectWithNestedArray() {
         val json = jsonObject {
-            "arr" jsonArray {
+            obj["arr"] = jsonArray {
                 array += 1
             }
         }
@@ -112,7 +112,7 @@ class JsonBuilderTests(private val adapter: JsonAdapter) {
     fun arrayWithNestedObject() {
         val json = jsonArray {
             array += jsonObject {
-                "hello" value "world"
+                obj["hello"] = "world"
             }
         }
 

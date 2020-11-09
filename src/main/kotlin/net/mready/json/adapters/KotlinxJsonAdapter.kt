@@ -23,6 +23,7 @@ open class KotlinxJsonAdapter(
             prettyPrint = false
             ignoreUnknownKeys = true
             useArrayPolymorphism = true
+            encodeDefaults = true
         }
     }
 

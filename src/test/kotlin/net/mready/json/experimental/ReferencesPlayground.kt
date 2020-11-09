@@ -1,8 +1,6 @@
 package net.mready.json.experimental
 
 import kotlinx.serialization.*
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.json.Json
 import net.mready.json.*
 import net.mready.json.adapters.JacksonJsonAdapter
 import net.mready.json.adapters.KotlinxJsonAdapter
@@ -44,26 +42,26 @@ class ReferenceTests(private val adapter: JsonAdapter) {
 
     @Test
     fun test() {
-        println(FluidJson(1).value<Int>())
+        println(FluidJson(1).decode<Int>())
 
 
         val json: FluidJson = adapter.ref(C(B()))
-        println(json.value<C>())
+        println(json.decode<C>())
         println(json.toJsonString())
 
         val json2 = adapter.parse(json.toJsonString())
-        println(json2.value<C>())
+        println(json2.decode<C>())
         json2["t"] = null
         json2["a"] = 1
-        println(json2.value<T1>())
+        println(json2.decode<T1>())
 
         val json3 = adapter.ref(T1(1))
         println(json3["a"].int)
         json3["b"] = 2
-        println(json3.value<T2>())
+        println(json3.decode<T2>())
 
         val json5 = adapter.parse("""{"v": "asd"}""")
-        println(json5.value<W<String>>())
+        println(json5.decode<W<String>>())
 
         val json4 = adapter.ref(W(1))
         println(json4.toJsonString())

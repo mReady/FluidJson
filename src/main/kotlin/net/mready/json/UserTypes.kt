@@ -14,7 +14,7 @@ inline fun <reified T : Any> JsonAdapter.ref(
     value?.let { JsonRefElement(it, typeOf<T>(), adapter = this) } ?: JsonNullElement(path, this)
 
 @ExperimentalUserTypes
-inline fun <reified T : Any> FluidJson.valueOrNull(): T? {
+inline fun <reified T : Any> FluidJson.decodeOrNull(): T? {
     require(this is JsonElement)
     return when (this) {
         is JsonNullElement -> null
@@ -34,7 +34,7 @@ inline fun <reified T : Any> FluidJson.valueOrNull(): T? {
 }
 
 @ExperimentalUserTypes
-inline fun <reified T : Any> FluidJson.value(): T {
+inline fun <reified T : Any> FluidJson.decode(): T {
     require(this is JsonElement)
     return when (this) {
         is JsonNullElement -> null

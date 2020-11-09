@@ -22,7 +22,7 @@ class MutationTests {
         json["bool"] = true
         json["array"] = listOf(1, 2, 3)
         json["obj"] = jsonObject {
-            "a" value 1
+            obj["a"] = 1
         }
 
         assertTrue { json["null"] is JsonNullElement }
@@ -106,7 +106,7 @@ class MutationTests {
     @Test
     fun failOnExplicitNull() {
         val json = jsonObject {
-            "null" value null
+            obj["null"] = null
         }
 
         assertFailsOn(PATH_ROOT, "null") { json["null"]["value"] = 1 }
@@ -117,7 +117,7 @@ class MutationTests {
     fun updatePathOnCopy() {
         val json = jsonObject {  }
         val inner = jsonObject {
-            "value" value 1
+            obj["value"] = 1
         }
 
         json["obj"]["inner"] = inner
@@ -158,7 +158,7 @@ class MutationTests {
     @Test
     fun deleteObjectKey() {
         val json = jsonObject {
-            "hello" value "world"
+            obj["hello"] = "world"
         }
         assertEquals("world", json["hello"].string)
 

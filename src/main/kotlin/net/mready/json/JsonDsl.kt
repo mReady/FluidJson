@@ -39,34 +39,6 @@ class JsonObjectDsl(
 ) : JsonDsl(path, adapter) {
     val obj: FluidJson = JsonObjectElement(mutableMapOf(), path, adapter)
 
-    infix fun String.value(value: Nothing?) {
-        obj[this] = null
-    }
-
-    infix fun String.value(value: String?) {
-        obj[this] = value
-    }
-
-    infix fun String.value(value: Number?) {
-        obj[this] = value
-    }
-
-    infix fun String.value(value: Boolean?) {
-        obj[this] = value
-    }
-
-    infix fun String.value(value: FluidJson?) {
-        obj[this] = value
-    }
-
-    inline infix fun String.jsonArray(block: JsonArrayDsl.() -> Unit) {
-        obj[this] = JsonArrayDsl(path + this, adapter).apply(block).build()
-    }
-
-    inline infix fun String.jsonObject(block: JsonObjectDsl.() -> Unit) {
-        obj[this] = JsonObjectDsl(path + this, adapter).apply(block).build()
-    }
-
     @PublishedApi
     internal fun build(): FluidJson {
         return obj
@@ -79,30 +51,6 @@ class JsonArrayDsl(
     adapter: JsonAdapter = FluidJson
 ) : JsonDsl(path, adapter) {
     val array: FluidJson = JsonArrayElement(mutableListOf(), path, adapter)
-
-    fun emit(value: Nothing?) {
-        array += null
-    }
-
-    fun emit(value: String?) {
-        array += value
-    }
-
-    fun emit(value: Number?) {
-        array += value
-    }
-
-    fun emit(value: Boolean?) {
-        array += value
-    }
-
-    fun emit(value: FluidJson?) {
-        array += value
-    }
-
-    inline fun <T> Collection<T>.emitEach(block: (T) -> FluidJson) {
-        forEach { emit(block(it)) }
-    }
 
     @PublishedApi
     internal fun build(): FluidJson {
