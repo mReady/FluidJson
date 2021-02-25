@@ -3,7 +3,7 @@ package net.mready.json
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-const val PATH_ROOT = "[root]"
+const val PATH_ROOT = "[json root]"
 
 inline fun assertFailsOn(vararg path: String, block: () -> Unit) {
     val e = assertFailsWith(FluidJsonException::class, null, block)

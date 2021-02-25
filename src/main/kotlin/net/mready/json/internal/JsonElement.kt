@@ -2,7 +2,6 @@
 
 package net.mready.json.internal
 
-import net.mready.json.ExperimentalUserTypes
 import net.mready.json.FluidJson
 import net.mready.json.FluidJsonException
 import net.mready.json.JsonAdapter
@@ -320,7 +319,6 @@ class JsonPrimitiveElement(
     }
 }
 
-@OptIn(ExperimentalUserTypes::class)
 class JsonRefElement(
     content: Any,
     val type: KType,

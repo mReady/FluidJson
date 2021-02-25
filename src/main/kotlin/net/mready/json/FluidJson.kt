@@ -7,6 +7,7 @@ import net.mready.json.adapters.FluidJsonSerializer
 import net.mready.json.adapters.KotlinxJsonAdapter
 import net.mready.json.internal.*
 import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 typealias Json = FluidJson
 
@@ -33,19 +34,15 @@ abstract class FluidJson internal constructor(
         override fun stringify(json: FluidJson) =
             defaultJsonAdapter.stringify(json)
 
-        @ExperimentalUserTypes
         override fun <T : Any> fromJson(json: FluidJson, type: KType) =
             defaultJsonAdapter.fromJson<T>(json, type)
 
-        @ExperimentalUserTypes
         override fun toJson(value: Any?, type: KType) =
             defaultJsonAdapter.toJson(value, type)
 
-        @ExperimentalUserTypes
         override fun <T : Any> decodeObject(string: String, type: KType) =
             defaultJsonAdapter.decodeObject<T>(string, type)
 
-        @ExperimentalUserTypes
         override fun encodeObject(value: Any?, type: KType) =
             defaultJsonAdapter.encodeObject(value, type)
 
@@ -273,6 +270,18 @@ abstract class FluidJson internal constructor(
         return adapter.wrap(this, path)
     }
 
+    private inline fun <reified T> Collection<T>?.asJsonArray(path: JsonPath): FluidJson {
+        if (this == null) return JsonNullElement(path, adapter)
+        val items = mapIndexedTo(mutableListOf()) { i, v -> adapter.wrap(v, path + i) }
+        return JsonArrayElement(items, path, adapter)
+    }
+
+    private inline fun <reified T> Map<String, T>?.asJsonObject(path: JsonPath): FluidJson {
+        if (this == null) return JsonNullElement(path, adapter)
+        val items = mapValuesTo(mutableMapOf()) { item -> adapter.wrap(item.value, path + item.key) }
+        return JsonObjectElement(items, path, adapter)
+    }
+
     // "extension" operators (embedded here because auto-import doesn't work great for operators)
 
     /**
@@ -309,7 +318,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an object
      */
     @JvmName("setValues")
-    operator fun set(key: String, value: Collection<FluidJson?>?) = set(key, value.asJson(path + key))
+    operator fun set(key: String, value: Collection<FluidJson?>?) = set(key, value.asJsonArray(path + key))
 
     /**
      * Associates a json element representing the given [value] with the specified [key].
@@ -317,7 +326,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an object
      */
     @JvmName("setStrings")
-    operator fun set(key: String, value: Collection<String?>?) = set(key, value.asJson(path + key))
+    operator fun set(key: String, value: Collection<String?>?) = set(key, value.asJsonArray(path + key))
 
     /**
      * Associates a json element representing the given [value] with the specified [key].
@@ -325,7 +334,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an object
      */
     @JvmName("setNumbers")
-    operator fun set(key: String, value: Collection<Number?>?) = set(key, value.asJson(path + key))
+    operator fun set(key: String, value: Collection<Number?>?) = set(key, value.asJsonArray(path + key))
 
     /**
      * Adds a json element representing `null` the the specified [index].
@@ -361,7 +370,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an array
      */
     @JvmName("setValues")
-    operator fun set(index: Int, value: Collection<FluidJson>?) = set(index, value.asJson(path + index))
+    operator fun set(index: Int, value: Collection<FluidJson>?) = set(index, value.asJsonArray(path + index))
 
     /**
      * Adds a json element representing the given [value] the the specified [index].
@@ -369,7 +378,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an array
      */
     @JvmName("setStrings")
-    operator fun set(index: Int, value: Collection<String?>?) = set(index, value.asJson(path + index))
+    operator fun set(index: Int, value: Collection<String?>?) = set(index, value.asJsonArray(path + index))
 
     /**
      * Adds a json element representing the given [value] the the specified [index].
@@ -377,7 +386,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an array
      */
     @JvmName("setNumbers")
-    operator fun set(index: Int, value: Collection<Number?>?) = set(index, value.asJson(path + index))
+    operator fun set(index: Int, value: Collection<Number?>?) = set(index, value.asJsonArray(path + index))
 
     /**
      * Adds a json element representing `null`.
@@ -413,7 +422,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an array
      */
     @JvmName("plusValues")
-    operator fun plusAssign(value: Collection<FluidJson>?) = plusAssign(value.asJson(path + size))
+    operator fun plusAssign(value: Collection<FluidJson>?) = plusAssign(value.asJsonArray(path + size))
 
     /**
      * Adds a json element representing the given [value].
@@ -421,7 +430,7 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an array
      */
     @JvmName("plusStrings")
-    operator fun plusAssign(value: Collection<String?>?) = plusAssign(value.asJson(path + size))
+    operator fun plusAssign(value: Collection<String?>?) = plusAssign(value.asJsonArray(path + size))
 
     /**
      * Adds a json element representing the given [value].
@@ -429,15 +438,47 @@ abstract class FluidJson internal constructor(
      * @throws [FluidJsonException] if this element does not represent an array
      */
     @JvmName("plusNumbers")
-    operator fun plusAssign(value: Collection<Number?>?) = plusAssign(value.asJson(path + size))
+    operator fun plusAssign(value: Collection<Number?>?) = plusAssign(value.asJsonArray(path + size))
 }
 
-fun List<FluidJson>.toJsonArray(adapter: JsonAdapter = FluidJson): FluidJson {
-    return JsonArrayElement(this.toMutableList(), adapter = adapter)
+inline fun <reified T : Any> FluidJson.decodeOrNull(): T? {
+    require(this is JsonElement)
+    return when (this) {
+        is JsonNullElement -> null
+        is JsonErrorElement -> null
+        is JsonRefElement -> select(
+            valueTransform = { it as? T },
+            jsonTransform = { runCatching { adapter.fromJson<T>(it, typeOf<T>()) }.getOrNull() }
+        )
+        is JsonArrayElement, is JsonObjectElement, is JsonPrimitiveElement -> runCatching {
+            adapter.fromJson<T>(this, typeOf<T>())
+        }.getOrNull()
+        is JsonEmptyElement -> when (val wrapped = wrapped) {
+            null -> null
+            else -> runCatching { adapter.fromJson<T>(wrapped, typeOf<T>()) }.getOrNull()
+        }
+    }
 }
 
-fun Map<String, FluidJson>.toJsonObject(adapter: JsonAdapter = FluidJson): FluidJson {
-    return JsonObjectElement(this.toMutableMap(), adapter = adapter)
+inline fun <reified T : Any> FluidJson.decode(): T {
+    require(this is JsonElement)
+    return when (this) {
+        is JsonNullElement -> null
+        is JsonErrorElement -> null
+        is JsonRefElement -> select(
+            valueTransform = { it as? T },
+            jsonTransform = { adapter.fromJson<T>(it, typeOf<T>()) }
+        )
+        is JsonArrayElement,
+        is JsonObjectElement,
+        is JsonPrimitiveElement
+        -> adapter.fromJson<T>(this, typeOf<T>())
+
+        is JsonEmptyElement -> when (val wrapped = wrapped) {
+            null -> null
+            else -> adapter.fromJson<T>(wrapped, typeOf<T>())
+        }
+    } ?: this.throwInvalidType(T::class.simpleName.orEmpty())
 }
 
 class FluidJsonException(

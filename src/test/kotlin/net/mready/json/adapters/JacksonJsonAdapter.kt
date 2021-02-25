@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import kotlinx.serialization.*
+import kotlinx.serialization.encoding.Encoder
 import net.mready.json.*
 import net.mready.json.internal.*
 import kotlin.reflect.KType
@@ -45,22 +47,18 @@ object JacksonJsonAdapter : JsonAdapter() {
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    @ExperimentalUserTypes
     override fun <T : Any> fromJson(json: FluidJson, type: KType): T {
         return objectMapper.readValue(stringify(json), objectMapper.constructType(type.javaType))
     }
 
-    @ExperimentalUserTypes
     override fun toJson(value: Any?, type: KType): FluidJson {
         return parse(objectMapper.writeValueAsString(value))
     }
 
-    @ExperimentalUserTypes
     override fun <T : Any> decodeObject(string: String, type: KType): T {
         return objectMapper.readValue(string, objectMapper.constructType(type.javaType))
     }
 
-    @ExperimentalUserTypes
     override fun encodeObject(value: Any?, type: KType): String {
         return objectMapper.writeValueAsString(value)
     }
@@ -99,7 +97,7 @@ object JsonElementSerializer : JsonSerializer<Json>() {
             }
             is JsonRefElement -> value.select(
                 valueTransform = {
-                    serializers.findValueSerializer(serializers.constructType(value.type.javaType))
+                    findSerializer(serializers, value.type, it)
                         .serialize(it, gen, serializers)
                 },
                 jsonTransform = {
@@ -110,6 +108,20 @@ object JsonElementSerializer : JsonSerializer<Json>() {
                 serialize(it, gen, serializers)
             } ?: gen.writeNull()
             is JsonErrorElement -> throw AssertionError()
+        }
+    }
+
+    private fun findClassSerializer(serializers: SerializerProvider, value: Any): JsonSerializer<Any?> {
+        @Suppress("UNCHECKED_CAST")
+        return serializers.findValueSerializer(value::class.java)
+    }
+
+    private fun findSerializer(serializers: SerializerProvider, type: KType, value: Any): JsonSerializer<Any?> {
+        return if (type.classifier == Any::class) {
+            findClassSerializer(serializers, value)
+        } else {
+            runCatching { serializers.findValueSerializer(serializers.constructType(type.javaType)) }
+                .getOrElse { findClassSerializer(serializers, value) }
         }
     }
 }

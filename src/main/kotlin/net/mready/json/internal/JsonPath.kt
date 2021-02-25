@@ -3,7 +3,7 @@ package net.mready.json.internal
 inline class JsonPath(private val path: String) {
     companion object {
         @JvmStatic
-        val ROOT = JsonPath("[root]")
+        val ROOT = JsonPath("[json root]")
     }
 
     operator fun plus(key: String) = JsonPath("$path > $key")

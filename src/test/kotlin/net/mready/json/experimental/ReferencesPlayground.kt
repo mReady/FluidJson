@@ -32,7 +32,6 @@ data class T2(
 data class W<T>(val v: T)
 
 @RunWith(Parameterized::class)
-@OptIn(ExperimentalUserTypes::class)
 class ReferenceTests(private val adapter: JsonAdapter) {
     companion object {
         @get:Parameterized.Parameters
@@ -45,7 +44,7 @@ class ReferenceTests(private val adapter: JsonAdapter) {
         println(FluidJson(1).decode<Int>())
 
 
-        val json: FluidJson = adapter.ref(C(B()))
+        val json: FluidJson = adapter.wrap(C(B()))
         println(json.decode<C>())
         println(json.toJsonString())
 
@@ -55,7 +54,7 @@ class ReferenceTests(private val adapter: JsonAdapter) {
         json2["a"] = 1
         println(json2.decode<T1>())
 
-        val json3 = adapter.ref(T1(1))
+        val json3 = adapter.wrap(T1(1))
         println(json3["a"].int)
         json3["b"] = 2
         println(json3.decode<T2>())
@@ -63,11 +62,20 @@ class ReferenceTests(private val adapter: JsonAdapter) {
         val json5 = adapter.parse("""{"v": "asd"}""")
         println(json5.decode<W<String>>())
 
-        val json4 = adapter.ref(W(1))
+        val json4 = adapter.wrap(W(1))
         println(json4.toJsonString())
 
         println(adapter.encodeObject(listOf(1, 2, 3)))
         println(adapter.decodeObject<List<Int>>("""[1, 2, 3]""").toString())
 
+    }
+
+    @Test
+    fun test2() {
+        fun x(value: Any): FluidJson {
+            return adapter.wrap(value)
+        }
+
+        println(x(A()).toJsonString())
     }
 }
