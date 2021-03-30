@@ -10,3 +10,11 @@ fun Collection<FluidJson>.toJsonArray(adapter: JsonAdapter = FluidJson): FluidJs
 fun Map<String, FluidJson>.toJsonObject(adapter: JsonAdapter = FluidJson): FluidJson {
     return JsonObjectElement(this.toMutableMap(), adapter = adapter)
 }
+
+inline fun <T> Collection<T>.mapToJsonArray(adapter: JsonAdapter = FluidJson, block: (T) -> FluidJson): FluidJson {
+    return jsonArray(adapter) {
+        forEach {
+            array += block(it)
+        }
+    }
+}

@@ -9,6 +9,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.modules.SerializersModule
 import net.mready.json.FluidJson
 import net.mready.json.JsonAdapter
 import net.mready.json.internal.*
@@ -113,7 +114,7 @@ object FluidJsonSerialization : SerializationStrategy<FluidJson> {
             is JsonNullElement -> encoder.encodeSerializableValue(JsonNullSerializer, value)
             is JsonRefElement -> value.select(
                 valueTransform = {
-                    val serializer = findSerializer(encoder, value.type, it)
+                    val serializer = findSerializer(encoder.serializersModule, value.type, it)
                         ?: error("No serializer found for ${it::class} (type: ${value.type}) at: ${value.path}")
                     encoder.encodeSerializableValue(serializer, it)
                 },
@@ -127,22 +128,6 @@ object FluidJsonSerialization : SerializationStrategy<FluidJson> {
                 encoder,
                 JsonNullElement(value.path, value.adapter)
             )
-        }
-    }
-
-    @OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-    private fun findClassSerializer(encoder: Encoder, value: Any): KSerializer<Any?>? {
-        @Suppress("UNCHECKED_CAST")
-        return (value::class.serializerOrNull()
-            ?: encoder.serializersModule.getContextual(value::class)) as KSerializer<Any?>?
-    }
-
-    private fun findSerializer(encoder: Encoder, type: KType, value: Any): KSerializer<Any?>? {
-        return if (type.classifier == Any::class) {
-            findClassSerializer(encoder, value)
-        } else {
-            runCatching { encoder.serializersModule.serializer(type) }
-                .getOrElse { findClassSerializer(encoder, value) }
         }
     }
 }

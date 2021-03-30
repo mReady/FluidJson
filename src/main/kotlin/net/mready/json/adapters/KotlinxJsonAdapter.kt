@@ -64,7 +64,8 @@ open class KotlinxJsonAdapter(
 
     override fun toJson(value: Any?, type: KType): FluidJson {
         return value?.let {
-            val serializer = jsonSerializer.serializersModule.serializer(type)
+            val serializer = findSerializer(jsonSerializer.serializersModule, type, it)
+                ?: error("No serializer found for ${it::class} (type: ${type})")
             FluidJson.fromKotlinJsonElement(jsonSerializer.encodeToJsonElement(serializer, it))
         } ?: JsonNullElement(adapter = this)
     }
@@ -79,7 +80,8 @@ open class KotlinxJsonAdapter(
 
     override fun encodeObject(value: Any?, type: KType): String {
         return value?.let {
-            val serializer = jsonSerializer.serializersModule.serializer(type)
+            val serializer = findSerializer(jsonSerializer.serializersModule, type, it)
+                ?: error("No serializer found for ${it::class} (type: ${type})")
             jsonSerializer.encodeToString(serializer, it)
         } ?: "null"
     }
