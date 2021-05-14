@@ -2,6 +2,7 @@ package net.mready.json
 
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.asserter
 
 const val PATH_ROOT = "[json root]"
 
@@ -14,6 +15,6 @@ inline fun assetSucceeds(block: () -> Unit) {
     try {
         block()
     } catch (e: Throwable) {
-        throw AssertionError("Should complete successfully", e)
+        asserter.fail("Should complete successfully", e)
     }
 }

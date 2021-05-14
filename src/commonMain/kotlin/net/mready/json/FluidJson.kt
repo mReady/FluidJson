@@ -6,13 +6,14 @@ import kotlinx.serialization.Serializable
 import net.mready.json.adapters.FluidJsonSerializer
 import net.mready.json.adapters.KotlinxJsonAdapter
 import net.mready.json.internal.*
+import kotlin.jvm.JvmName
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
 typealias Json = FluidJson
 
 @Serializable(with = FluidJsonSerializer::class)
-abstract class FluidJson internal constructor(
+sealed class FluidJson(
     val path: JsonPath,
     val adapter: JsonAdapter
 ) {
@@ -50,32 +51,7 @@ abstract class FluidJson internal constructor(
         /**
          * Create an empty [FluidJson] instance.
          */
-        operator fun invoke(): FluidJson =
-            defaultJsonAdapter.newJson()
-
-        /**
-         * Create a [FluidJson] instance representing `null`.
-         */
-        operator fun invoke(value: Nothing?): FluidJson =
-            JsonNullElement(JsonPath.ROOT, defaultJsonAdapter)
-
-        /**
-         * Wrap the given string [value] into a [FluidJson] instance.
-         */
-        operator fun invoke(value: String?): FluidJson =
-            defaultJsonAdapter.wrap(value, JsonPath.ROOT)
-
-        /**
-         * Wrap the given number [value] into a [FluidJson] instance.
-         */
-        operator fun invoke(value: Number?): FluidJson =
-            defaultJsonAdapter.wrap(value, JsonPath.ROOT)
-
-        /**
-         * Wrap the given boolean [value] into a [FluidJson] instance.
-         */
-        operator fun invoke(value: Boolean?): FluidJson =
-            defaultJsonAdapter.wrap(value, JsonPath.ROOT)
+        operator fun invoke(): FluidJson = defaultJsonAdapter.newJson()
 
         override fun equals(other: Any?): Boolean {
             // Setters and DSLs will make copies of elements if we don't override equals

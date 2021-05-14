@@ -1,12 +1,12 @@
 package net.mready.json.experimental
 
-import kotlinx.serialization.*
-import net.mready.json.*
-import net.mready.json.adapters.JacksonJsonAdapter
+import kotlinx.serialization.Serializable
+import net.mready.json.FluidJson
+import net.mready.json.JsonAdapter
 import net.mready.json.adapters.KotlinxJsonAdapter
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import net.mready.json.decode
+import net.mready.json.jsonObject
+import kotlin.test.Test
 
 @Serializable
 data class A(val a: Int = 1, val b: Int = 2)
@@ -31,18 +31,13 @@ data class T2(
 @Serializable
 data class W<T>(val v: T)
 
-@RunWith(Parameterized::class)
-class ReferenceTests(private val adapter: JsonAdapter) {
-    companion object {
-        @get:Parameterized.Parameters
-        @JvmStatic
-        val adapters = listOf(KotlinxJsonAdapter(), JacksonJsonAdapter)
-    }
+open class ReferenceTests {
+    open val adapter: JsonAdapter = KotlinxJsonAdapter()
 
     @Test
     fun test() {
-        println(FluidJson(1).decode<Int>())
 
+        println(FluidJson.wrap(1).decode<Int>())
 
         val json: FluidJson = adapter.wrap(C(B()))
         println(json.decode<C>())

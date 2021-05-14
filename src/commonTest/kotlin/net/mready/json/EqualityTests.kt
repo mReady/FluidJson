@@ -1,32 +1,32 @@
 package net.mready.json
 
 import net.mready.json.internal.JsonPrimitiveElement
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
-class EqualityTests {
+open class EqualityTests {
     @Test
     fun primitiveEquals() {
-        assertEquals(Json("123"), Json("123"))
-        assertNotEquals(Json("123"), Json("1234"))
+        assertEquals(Json.wrap("123"), Json.wrap("123"))
+        assertNotEquals(Json.wrap("123"), Json.wrap("1234"))
 
-        assertEquals(Json(123), Json(123))
-        assertNotEquals(Json(123), Json(1234))
+        assertEquals(Json.wrap(123), Json.wrap(123))
+        assertNotEquals(Json.wrap(123), Json.wrap(1234))
 
-        assertEquals(Json(123L), Json(123L))
-        assertNotEquals(Json(123L), Json(1234L))
+        assertEquals(Json.wrap(123L), Json.wrap(123L))
+        assertNotEquals(Json.wrap(123L), Json.wrap(1234L))
 
-        assertEquals(Json(123.0), Json(123.0))
-        assertNotEquals(Json(123.0), Json(123.4))
+        assertEquals(Json.wrap(123.0), Json.wrap(123.0))
+        assertNotEquals(Json.wrap(123.0), Json.wrap(123.4))
 
-        assertEquals(Json(123), Json(123L))
-        assertEquals(Json(123), Json(123.0))
+        assertEquals(Json.wrap(123), Json.wrap(123L))
+        assertEquals(Json.wrap(123), Json.wrap(123.0))
 
-        assertEquals(Json(true), Json(true))
-        assertNotEquals(Json(true), Json(false))
+        assertEquals(Json.wrap(true), Json.wrap(true))
+        assertNotEquals(Json.wrap(true), Json.wrap(false))
 
-        assertNotEquals(Json(123), Json("123"))
+        assertNotEquals(Json.wrap(123), Json.wrap("123"))
 
         assertEquals(
             JsonPrimitiveElement("123", JsonPrimitiveElement.Type.UNKNOWN, adapter = FluidJson),
@@ -46,7 +46,7 @@ class EqualityTests {
 
     @Test
     fun nullEqual() {
-        assertEquals(Json(null), Json(null))
+        assertEquals(Json.wrap(null), Json.wrap(null))
     }
 
     @Test

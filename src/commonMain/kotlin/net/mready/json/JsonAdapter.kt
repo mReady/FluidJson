@@ -17,6 +17,10 @@ abstract class JsonAdapter(
         return JsonEmptyElement(adapter = this)
     }
 
+    inline fun wrap(value: Nothing?, path: JsonPath = JsonPath.ROOT): FluidJson {
+        return JsonNullElement(path, this)
+    }
+    
     inline fun <reified T> wrap(value: T, path: JsonPath = JsonPath.ROOT): FluidJson {
         return wrapInternal(value, typeOf<T>(), path)
     }

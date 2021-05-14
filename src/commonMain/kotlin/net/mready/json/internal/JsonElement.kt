@@ -5,6 +5,7 @@ package net.mready.json.internal
 import net.mready.json.FluidJson
 import net.mready.json.FluidJsonException
 import net.mready.json.JsonAdapter
+import kotlin.js.JsName
 import kotlin.reflect.KType
 
 
@@ -429,6 +430,7 @@ class JsonEmptyElement(
     internal var wrapped: JsonElement? = null
     private inline val defaultException get() = FluidJsonException("Json element is empty", path)
 
+    @JsName("getWrapped")
     fun wrapped(): FluidJson? = wrapped
 
     override fun copy(path: JsonPath, adapter: JsonAdapter) =
@@ -438,10 +440,11 @@ class JsonEmptyElement(
 
     private fun materializeAsObject(): FluidJson {
         if (wrapped == null) {
-            synchronized(this) {
+            // TODO
+            //synchronized(this) {
                 if (wrapped !is JsonObjectElement?) throwInvalidType("object")
                 wrapped = JsonObjectElement(mutableMapOf(), path, adapter)
-            }
+            //}
         } else if (wrapped !is JsonObjectElement) {
             throwInvalidType("object")
         }
@@ -451,10 +454,11 @@ class JsonEmptyElement(
 
     private fun materializeAsArray(): FluidJson {
         if (wrapped == null) {
-            synchronized(this) {
+            // TODO
+            // synchronized(this) {
                 if (wrapped !is JsonArrayElement?) throwInvalidType("array")
                 wrapped = JsonArrayElement(mutableListOf(), path, adapter)
-            }
+            //}
         } else if (wrapped !is JsonArrayElement) {
             throwInvalidType("array")
         }

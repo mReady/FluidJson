@@ -1,6 +1,10 @@
 package net.mready.json.internal
 
-inline class JsonPath(private val path: String) {
+import kotlin.jvm.JvmStatic
+import kotlin.jvm.JvmInline
+
+@JvmInline
+value class JsonPath(private val path: String) {
     companion object {
         @JvmStatic
         val ROOT = JsonPath("[json root]")

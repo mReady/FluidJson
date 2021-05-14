@@ -1,26 +1,17 @@
 package net.mready.json
 
-import net.mready.json.adapters.JacksonJsonAdapter
+import net.mready.json.adapters.KotlinxJsonAdapter
 import net.mready.json.internal.JsonArrayElement
 import net.mready.json.internal.JsonEmptyElement
 import net.mready.json.internal.JsonObjectElement
 import net.mready.json.internal.JsonPrimitiveElement
-import net.mready.json.adapters.KotlinxJsonAdapter
-import org.intellij.lang.annotations.Language
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-@RunWith(Parameterized::class)
-class ParseTests(private val adapter: JsonAdapter) {
-    companion object {
-        @get:Parameterized.Parameters
-        @JvmStatic
-        val adapters = listOf(KotlinxJsonAdapter(), JacksonJsonAdapter)
-    }
+open class ParseTests {
+    open val adapter: JsonAdapter = KotlinxJsonAdapter()
 
     @Test
     fun emptyString() {
@@ -98,9 +89,7 @@ class ParseTests(private val adapter: JsonAdapter) {
     @Test
     fun invalidArray() {
         assertFailsWith<JsonParseException> { adapter.parse("[1") }
-        if (adapter !is JacksonJsonAdapter) { // TODO: this works with jackson, should it?
-            assertFailsWith<JsonParseException> { adapter.parse("[1]]") }
-        }
+        assertFailsWith<JsonParseException> { adapter.parse("[1]]") }
     }
 
     @Test
@@ -132,15 +121,17 @@ class ParseTests(private val adapter: JsonAdapter) {
 
     @Test
     fun complexJson() {
-        @Language("JSON")
-        val json = adapter.parse("""
+        //language=JSON
+        val json = adapter.parse(
+            """
             {
               "string": "str1",
               "inner": {
                 "array": [1, "hello", {"hello": "world"}, [true]]
               }
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         assertTrue { json is JsonObjectElement }
         assertTrue { json["string"] is JsonPrimitiveElement }

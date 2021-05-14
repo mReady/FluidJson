@@ -2,12 +2,12 @@ package net.mready.json
 
 import net.mready.json.internal.*
 import net.mready.json.adapters.KotlinxJsonAdapter
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class JsonTypesTests {
-    private val adapter: JsonAdapter = KotlinxJsonAdapter()
+open class JsonTypesTests {
+    open val adapter: JsonAdapter = KotlinxJsonAdapter()
 
     @Test
     fun emptyJson() {

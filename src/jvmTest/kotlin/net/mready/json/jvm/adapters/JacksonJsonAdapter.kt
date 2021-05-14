@@ -1,4 +1,4 @@
-package net.mready.json.adapters
+package net.mready.json.jvm.adapters
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import kotlinx.serialization.*
-import kotlinx.serialization.encoding.Encoder
 import net.mready.json.*
 import net.mready.json.internal.*
 import kotlin.reflect.KType
@@ -104,7 +102,7 @@ object JsonElementSerializer : JsonSerializer<Json>() {
                     serialize(it, gen, serializers)
                 }
             )
-            is JsonEmptyElement -> value.wrapped?.let {
+            is JsonEmptyElement -> value.wrapped()?.let {
                 serialize(it, gen, serializers)
             } ?: gen.writeNull()
             is JsonErrorElement -> throw AssertionError()
@@ -120,7 +118,7 @@ object JsonElementSerializer : JsonSerializer<Json>() {
         return if (type.classifier == Any::class) {
             findClassSerializer(serializers, value)
         } else {
-            runCatching { serializers.findValueSerializer(serializers.constructType(type.javaType)) }
+            runCatching { serializers.findTypedValueSerializer(serializers.constructType(type.javaType), true, null) }
                 .getOrElse { findClassSerializer(serializers, value) }
         }
     }
