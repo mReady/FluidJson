@@ -13,7 +13,7 @@ import kotlin.reflect.typeOf
 typealias Json = FluidJson
 
 @Serializable(with = FluidJsonSerializer::class)
-sealed class FluidJson(
+abstract class FluidJson internal constructor(
     val path: JsonPath,
     val adapter: JsonAdapter
 ) {
