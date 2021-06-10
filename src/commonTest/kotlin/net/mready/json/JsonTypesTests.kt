@@ -37,7 +37,7 @@ open class JsonTypesTests {
 
     @Test
     fun nullJson() {
-        val json = FluidJson(null)
+        val json = FluidJson.wrap(null)
 
         assertTrue { json is JsonNullElement }
         assertEquals(true, json.isNull)
@@ -94,7 +94,7 @@ open class JsonTypesTests {
     @Test
     fun stringJson() {
         val string = "test"
-        val json = FluidJson(string)
+        val json = FluidJson.wrap(string)
 
         assertTrue { json is JsonPrimitiveElement }
         assertEquals(false, json.isNull)
@@ -123,7 +123,7 @@ open class JsonTypesTests {
     @Test
     fun intJson() {
         val number = 1
-        val json = FluidJson(number)
+        val json = FluidJson.wrap(number)
 
         assertTrue { json is JsonPrimitiveElement }
         assertEquals(false, json.isNull)
@@ -152,7 +152,7 @@ open class JsonTypesTests {
     @Test
     fun longJson() {
         val number = 1L
-        val json = FluidJson(number)
+        val json = FluidJson.wrap(number)
 
         assertTrue { json is JsonPrimitiveElement }
         assertEquals(false, json.isNull)
@@ -181,7 +181,7 @@ open class JsonTypesTests {
     @Test
     fun doubleJson() {
         val number = 1.0
-        val json = FluidJson(number)
+        val json = FluidJson.wrap(number)
 
         assertTrue { json is JsonPrimitiveElement }
         assertEquals(false, json.isNull)

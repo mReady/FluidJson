@@ -2,6 +2,7 @@
 
 package net.mready.json
 
+import kotlinx.atomicfu.atomic
 import kotlinx.serialization.Serializable
 import net.mready.json.adapters.FluidJsonSerializer
 import net.mready.json.adapters.KotlinxJsonAdapter
@@ -18,10 +19,16 @@ abstract class FluidJson internal constructor(
     val adapter: JsonAdapter
 ) {
     companion object: JsonAdapter() {
-        private var defaultJsonAdapter: JsonAdapter = KotlinxJsonAdapter()
+        private val defaultJsonAdapter = atomic<JsonAdapter?>(null)
+        private val jsonAdapter: JsonAdapter by lazy {
+            defaultJsonAdapter.compareAndSet(null, KotlinxJsonAdapter())
+            defaultJsonAdapter.value!!
+        }
 
         fun setDefaultAdapter(adapter: JsonAdapter) {
-            defaultJsonAdapter = adapter
+            if (!defaultJsonAdapter.compareAndSet(null, adapter)) {
+                error("Default JsonAdapter already set")
+            }
         }
 
         /**
@@ -30,34 +37,34 @@ abstract class FluidJson internal constructor(
          * @throws [JsonParseException] if the given [string] is not a valid JSON
          */
         override fun parse(string: String) =
-            defaultJsonAdapter.parse(string)
+            jsonAdapter.parse(string)
 
         override fun stringify(json: FluidJson) =
-            defaultJsonAdapter.stringify(json)
+            jsonAdapter.stringify(json)
 
         override fun <T : Any> fromJson(json: FluidJson, type: KType) =
-            defaultJsonAdapter.fromJson<T>(json, type)
+            jsonAdapter.fromJson<T>(json, type)
 
         override fun toJson(value: Any?, type: KType) =
-            defaultJsonAdapter.toJson(value, type)
+            jsonAdapter.toJson(value, type)
 
         override fun <T : Any> decodeObject(string: String, type: KType) =
-            defaultJsonAdapter.decodeObject<T>(string, type)
+            jsonAdapter.decodeObject<T>(string, type)
 
         override fun encodeObject(value: Any?, type: KType) =
-            defaultJsonAdapter.encodeObject(value, type)
+            jsonAdapter.encodeObject(value, type)
 
 
         /**
          * Create an empty [FluidJson] instance.
          */
-        operator fun invoke(): FluidJson = defaultJsonAdapter.newJson()
+        operator fun invoke(): FluidJson = jsonAdapter.newJson()
 
         override fun equals(other: Any?): Boolean {
             // Setters and DSLs will make copies of elements if we don't override equals
             // but bad things can happen if the default adapter is switched after element instances were created
             // TODO: should setting the default adapter be prohibited after it's first used?
-            return other == defaultJsonAdapter
+            return other == jsonAdapter
         }
     }
 

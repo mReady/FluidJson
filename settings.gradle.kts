@@ -1,10 +1,16 @@
 pluginManagement {
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == "kotlinx-atomicfu") {
+                useModule("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${requested.version}")
+            }
+        }
+    }
+
     repositories {
         maven { setUrl("https://dl.bintray.com/kotlin/kotlin-eap") }
-
         mavenCentral()
-
-        maven { setUrl("https://plugins.gradle.org/m2/") }
+        gradlePluginPortal()
     }
 }
 rootProject.name = "FluidJson"
