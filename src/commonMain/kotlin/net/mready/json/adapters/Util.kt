@@ -13,10 +13,13 @@ internal fun findClassSerializer(serializersModule: SerializersModule, value: An
 }
 
 internal fun findSerializer(serializersModule: SerializersModule, type: KType, value: Any): KSerializer<Any?>? {
-    return if (type.classifier == Any::class) {
+    return if (type.isErased()) {
         findClassSerializer(serializersModule, value)
     } else {
         runCatching { serializersModule.serializer(type) }
             .getOrElse { findClassSerializer(serializersModule, value) }
     }
 }
+
+@PublishedApi
+internal fun KType.isErased() = classifier == Any::class

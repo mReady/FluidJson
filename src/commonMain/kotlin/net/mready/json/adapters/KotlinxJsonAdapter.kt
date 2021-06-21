@@ -54,7 +54,7 @@ open class KotlinxJsonAdapter(
         return jsonSerializer.encodeToString(serializationStrategy, json)
     }
 
-    override fun <T : Any> fromJson(json: FluidJson, type: KType): T {
+    override fun <T> fromJson(json: FluidJson, type: KType): T {
         @Suppress("UNCHECKED_CAST")
         return jsonSerializer.decodeFromJsonElement(
             jsonSerializer.serializersModule.serializer(type) as KSerializer<T>,
@@ -70,7 +70,7 @@ open class KotlinxJsonAdapter(
         } ?: JsonNullElement(adapter = this)
     }
 
-    override fun <T : Any> decodeObject(string: String, type: KType): T {
+    override fun <T> decodeObject(string: String, type: KType): T {
         @Suppress("UNCHECKED_CAST")
         return jsonSerializer.decodeFromString(
             jsonSerializer.serializersModule.serializer(type) as KSerializer<T>,

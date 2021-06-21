@@ -13,17 +13,19 @@ class JsonErrorElement(
 
     override fun copy(path: JsonPath, adapter: JsonAdapter) = JsonErrorElement(e, path, adapter)
 
+    fun throwError(): Nothing = throwError(e)
+
     override operator fun get(key: String) = this
     override operator fun get(index: Int) = this
 
     override val isNull: Boolean get() = true
     override val orNull: JsonElement? get() = null
 
-    override val string: String get() = throwError(e)
-    override val int: Int get() = throwError(e)
-    override val long: Long get() = throwError(e)
-    override val double: Double get() = throwError(e)
-    override val bool: Boolean get() = throwError(e)
-    override val array: List<JsonElement> get() = throwError(e)
-    override val obj: Map<String, JsonElement> get() = throwError(e)
+    override val string: String get() = throwError()
+    override val int: Int get() = throwError()
+    override val long: Long get() = throwError()
+    override val double: Double get() = throwError()
+    override val bool: Boolean get() = throwError()
+    override val array: List<JsonElement> get() = throwError()
+    override val obj: Map<String, JsonElement> get() = throwError()
 }

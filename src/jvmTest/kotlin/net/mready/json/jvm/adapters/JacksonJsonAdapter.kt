@@ -45,7 +45,7 @@ object JacksonJsonAdapter : JsonAdapter() {
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun <T : Any> fromJson(json: FluidJson, type: KType): T {
+    override fun <T> fromJson(json: FluidJson, type: KType): T {
         return objectMapper.readValue(stringify(json), objectMapper.constructType(type.javaType))
     }
 
@@ -53,7 +53,7 @@ object JacksonJsonAdapter : JsonAdapter() {
         return parse(objectMapper.writeValueAsString(value))
     }
 
-    override fun <T : Any> decodeObject(string: String, type: KType): T {
+    override fun <T> decodeObject(string: String, type: KType): T {
         return objectMapper.readValue(string, objectMapper.constructType(type.javaType))
     }
 
@@ -93,7 +93,7 @@ object JsonElementSerializer : JsonSerializer<Json>() {
                 }
                 gen.writeEndArray()
             }
-            is JsonRefElement -> value.select(
+            is JsonRefElement -> value.select<Any, Unit>(
                 valueTransform = {
                     findSerializer(serializers, value.type, it)
                         .serialize(it, gen, serializers)
@@ -105,7 +105,7 @@ object JsonElementSerializer : JsonSerializer<Json>() {
             is JsonEmptyElement -> value.wrapped()?.let {
                 serialize(it, gen, serializers)
             } ?: gen.writeNull()
-            is JsonErrorElement -> throw AssertionError()
+            is JsonErrorElement -> value.throwError()
         }
     }
 

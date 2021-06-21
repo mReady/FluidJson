@@ -6,6 +6,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.serialization.Serializable
 import net.mready.json.adapters.FluidJsonSerializer
 import net.mready.json.adapters.KotlinxJsonAdapter
+import net.mready.json.adapters.isErased
 import net.mready.json.internal.*
 import kotlin.jvm.JvmName
 import kotlin.reflect.KType
@@ -18,7 +19,7 @@ abstract class FluidJson internal constructor(
     val path: JsonPath,
     val adapter: JsonAdapter
 ) {
-    companion object: JsonAdapter() {
+    companion object : JsonAdapter() {
         private val defaultJsonAdapter = atomic<JsonAdapter?>(null)
         private val jsonAdapter: JsonAdapter by lazy {
             defaultJsonAdapter.compareAndSet(null, KotlinxJsonAdapter())
@@ -42,13 +43,13 @@ abstract class FluidJson internal constructor(
         override fun stringify(json: FluidJson) =
             jsonAdapter.stringify(json)
 
-        override fun <T : Any> fromJson(json: FluidJson, type: KType) =
+        override fun <T> fromJson(json: FluidJson, type: KType) =
             jsonAdapter.fromJson<T>(json, type)
 
         override fun toJson(value: Any?, type: KType) =
             jsonAdapter.toJson(value, type)
 
-        override fun <T : Any> decodeObject(string: String, type: KType) =
+        override fun <T> decodeObject(string: String, type: KType) =
             jsonAdapter.decodeObject<T>(string, type)
 
         override fun encodeObject(value: Any?, type: KType) =
@@ -424,14 +425,18 @@ abstract class FluidJson internal constructor(
     operator fun plusAssign(value: Collection<Number?>?) = plusAssign(value.asJsonArray(path + size))
 }
 
-inline fun <reified T : Any> FluidJson.decodeOrNull(): T? {
+inline fun <reified T : Any?> FluidJson.decodeOrNull(): T? {
     require(this is JsonElement)
     return when (this) {
         is JsonNullElement -> null
         is JsonErrorElement -> null
-        is JsonRefElement -> select(
-            valueTransform = { it as? T },
-            jsonTransform = { runCatching { adapter.fromJson<T>(it, typeOf<T>()) }.getOrNull() }
+        is JsonRefElement -> select<T, T?>(
+            valueTransform = { it },
+            jsonTransform = {
+                val type = typeOf<T>()
+                val decodeType = if (type.isErased()) this.type else type
+                runCatching { adapter.fromJson<T>(it, decodeType) }.getOrNull()
+            }
         )
         is JsonArrayElement, is JsonObjectElement, is JsonPrimitiveElement -> runCatching {
             adapter.fromJson<T>(this, typeOf<T>())
@@ -443,15 +448,22 @@ inline fun <reified T : Any> FluidJson.decodeOrNull(): T? {
     }
 }
 
-inline fun <reified T : Any> FluidJson.decode(): T {
+inline fun <reified T : Any?> FluidJson.decode(): T {
     require(this is JsonElement)
     return when (this) {
         is JsonNullElement -> null
-        is JsonErrorElement -> null
-        is JsonRefElement -> select(
-            valueTransform = { it as? T },
-            jsonTransform = { adapter.fromJson<T>(it, typeOf<T>()) }
-        )
+        is JsonErrorElement -> throwError()
+        is JsonRefElement -> {
+            select<T, T>(
+                valueTransform = { it },
+                jsonTransform = {
+                    val type = typeOf<T>()
+
+                    val decodeType = if (type.isErased()) this.type else type
+                    adapter.fromJson(it, decodeType)
+                }
+            )
+        }
         is JsonArrayElement,
         is JsonObjectElement,
         is JsonPrimitiveElement
@@ -461,7 +473,7 @@ inline fun <reified T : Any> FluidJson.decode(): T {
             null -> null
             else -> adapter.fromJson<T>(wrapped, typeOf<T>())
         }
-    } ?: this.throwInvalidType(T::class.simpleName.orEmpty())
+    } as T
 }
 
 class FluidJsonException(

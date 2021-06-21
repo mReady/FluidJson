@@ -41,19 +41,19 @@ abstract class JsonAdapter(
     }
 
 
-    abstract fun <T : Any> fromJson(json: FluidJson, type: KType): T
+    abstract fun <T> fromJson(json: FluidJson, type: KType): T
 
-    inline fun <reified T : Any> fromJson(json: FluidJson): T = fromJson(json, typeOf<T>())
+    inline fun <reified T> fromJson(json: FluidJson): T = fromJson(json, typeOf<T>())
 
     abstract fun toJson(value: Any?, type: KType): FluidJson
 
-    inline fun <reified T : Any?> toJson(value: T): FluidJson = toJson(value, typeOf<T>())
+    inline fun <reified T> toJson(value: T): FluidJson = toJson(value, typeOf<T>())
 
-    abstract fun <T : Any> decodeObject(string: String, type: KType): T
+    abstract fun <T> decodeObject(string: String, type: KType): T
 
-    inline fun <reified T : Any> decodeObject(string: String): T = decodeObject(string, typeOf<T>())
+    inline fun <reified T> decodeObject(string: String): T = decodeObject(string, typeOf<T>())
 
     abstract fun encodeObject(value: Any?, type: KType): String
 
-    inline fun <reified T : Any?> encodeObject(value: T): String = encodeObject(value, typeOf<T>())
+    inline fun <reified T> encodeObject(value: T): String = encodeObject(value, typeOf<T>())
 }

@@ -2,7 +2,7 @@ package net.mready.json.jvm
 
 import net.mready.json.*
 import net.mready.json.adapters.KotlinxJsonAdapter
-import net.mready.json.experimental.ReferenceTests
+import net.mready.json.experimental.ObjectDecodeTests
 import net.mready.json.jvm.adapters.JacksonJsonAdapter
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -63,7 +63,7 @@ class ParameterizedSerializeTests(override val adapter: JsonAdapter): SerializeT
 }
 
 @RunWith(Parameterized::class)
-class ParameterizedReferenceTests(override val adapter: JsonAdapter): ReferenceTests() {
+class ParameterizedObjectDecodeTests(override val adapter: JsonAdapter): ObjectDecodeTests() {
     companion object {
         @get:Parameterized.Parameters
         @JvmStatic

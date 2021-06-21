@@ -44,11 +44,11 @@ private fun toJsonElement(value: FluidJson): KJsonElement {
         is JsonEmptyElement -> value.wrapped?.let {
             toJsonElement(it)
         } ?: KJsonNull
-        is JsonRefElement -> value.select(
+        is JsonRefElement -> value.select<Any, KJsonElement>(
             valueTransform = { toJsonElement(value.adapter.toJson(it, value.type)) },
             jsonTransform = { toJsonElement(it) }
         )
-        is JsonErrorElement -> throw AssertionError()
+        is JsonErrorElement -> value.throwError()
     }
 }
 
@@ -112,7 +112,7 @@ object FluidJsonSerialization : SerializationStrategy<FluidJson> {
             is JsonObjectElement -> encoder.encodeSerializableValue(JsonObjectSerializer, value)
             is JsonArrayElement -> encoder.encodeSerializableValue(JsonArraySerializer, value)
             is JsonNullElement -> encoder.encodeSerializableValue(JsonNullSerializer, value)
-            is JsonRefElement -> value.select(
+            is JsonRefElement -> value.select<Any, Unit>(
                 valueTransform = {
                     val serializer = findSerializer(encoder.serializersModule, value.type, it)
                         ?: error("No serializer found for ${it::class} (type: ${value.type}) at: ${value.path}")
