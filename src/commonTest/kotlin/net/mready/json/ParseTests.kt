@@ -66,7 +66,7 @@ open class ParseTests {
         assertTrue { json is JsonPrimitiveElement }
         assertTrue { (json as JsonPrimitiveElement).type == JsonPrimitiveElement.Type.UNKNOWN }
         assertEquals("123.0.0", json.string)
-        assertFailsOn(PATH_ROOT) { json.double }
+        assertFailsOn("$") { json.double }
     }
 
     @Test

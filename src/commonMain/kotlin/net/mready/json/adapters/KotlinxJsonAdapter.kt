@@ -18,9 +18,7 @@ open class KotlinxJsonAdapter(
 ) : JsonAdapter(transformers) {
     companion object {
         val defaultSerializer = kotlinx.serialization.json.Json {
-            prettyPrint = false
             ignoreUnknownKeys = true
-            useArrayPolymorphism = true
             encodeDefaults = true
         }
     }

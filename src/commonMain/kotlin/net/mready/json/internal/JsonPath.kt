@@ -7,11 +7,11 @@ import kotlin.jvm.JvmInline
 value class JsonPath(private val path: String) {
     companion object {
         @JvmStatic
-        val ROOT = JsonPath("[json root]")
+        val ROOT = JsonPath("$")
     }
 
-    operator fun plus(key: String) = JsonPath("$path > $key")
-    operator fun plus(index: Int) = JsonPath("$path > [$index]")
+    operator fun plus(key: String) = JsonPath("$path['$key']")
+    operator fun plus(index: Int) = JsonPath("$path[$index]")
 
     override fun toString() = path
 }

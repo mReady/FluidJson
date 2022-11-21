@@ -1,5 +1,6 @@
 package net.mready.json.internal
 
+import kotlinx.atomicfu.atomic
 import net.mready.json.FluidJson
 import net.mready.json.FluidJsonException
 import net.mready.json.JsonAdapter
@@ -11,46 +12,35 @@ class JsonEmptyElement(
     private val pendingException: (() -> FluidJsonException)? = null
 ) : JsonElement(path, adapter) {
     override val elementName: String
-        get() = wrapped?.elementName ?: "null"
+        get() = wrapped.value?.elementName ?: "null"
 
-    @PublishedApi
-    internal var wrapped: JsonElement? = null
+    private val wrapped = atomic<JsonElement?>(null)
     private inline val defaultException get() = FluidJsonException("Json element is empty", path)
 
     @JsName("getWrapped")
-    fun wrapped(): FluidJson? = wrapped
+    fun wrapped(): FluidJson? = wrapped.value
 
     override fun copy(path: JsonPath, adapter: JsonAdapter) =
-        wrapped?.copy(path, adapter) ?: JsonEmptyElement(path, adapter, pendingException)
+        wrapped.value?.copy(path, adapter) ?: JsonEmptyElement(path, adapter, pendingException)
 
-    override val size: Int get() = wrapped?.size ?: 0
+    override val size: Int get() = wrapped.value?.size ?: 0
 
     private fun materializeAsObject(): FluidJson {
-        if (wrapped == null) {
-            // TODO
-            //synchronized(this) {
-                if (wrapped !is JsonObjectElement?) throwInvalidType("object")
-                wrapped = JsonObjectElement(mutableMapOf(), path, adapter)
-            //}
-        } else if (wrapped !is JsonObjectElement) {
+        wrapped.compareAndSet(null, JsonObjectElement(mutableMapOf(), path, adapter))
+        if (wrapped.value !is JsonObjectElement) {
             throwInvalidType("object")
+        } else {
+            return wrapped.value!!
         }
-
-        return wrapped!!
     }
 
     private fun materializeAsArray(): FluidJson {
-        if (wrapped == null) {
-            // TODO
-            // synchronized(this) {
-                if (wrapped !is JsonArrayElement?) throwInvalidType("array")
-                wrapped = JsonArrayElement(mutableListOf(), path, adapter)
-            //}
-        } else if (wrapped !is JsonArrayElement) {
+        wrapped.compareAndSet(null, JsonArrayElement(mutableListOf(), path, adapter))
+        if (wrapped.value !is JsonArrayElement) {
             throwInvalidType("array")
+        } else {
+            return wrapped.value!!
         }
-
-        return wrapped!!
     }
 
     override operator fun get(key: String): FluidJson {
@@ -76,8 +66,15 @@ class JsonEmptyElement(
     override fun delete(key: String) = materializeAsObject().delete(key)
     override fun delete(index: Int) = materializeAsArray().delete(index)
 
-    override val isNull: Boolean get() = wrapped == null
-    override val orNull: FluidJson? get() = wrapped
+    override val isNull: Boolean get() = when(val wrapped = wrapped.value) {
+        null -> true
+        is JsonObjectElement -> wrapped.obj.values
+            .all { it is JsonEmptyElement && it.wrapped()?.isNull != false }
+        is JsonArrayElement -> wrapped.array
+            .all { it is JsonEmptyElement && it.wrapped()?.isNull != false }
+        else -> false
+    }
+    override val orNull: FluidJson? get() = if (isNull) null else wrapped.value
 
     override val string: String get() = throwError(pendingException?.invoke() ?: defaultException)
     override val int: Int get() = throwError(pendingException?.invoke() ?: defaultException)
@@ -85,26 +82,26 @@ class JsonEmptyElement(
     override val double: Double get() = throwError(pendingException?.invoke() ?: defaultException)
     override val bool: Boolean get() = throwError(pendingException?.invoke() ?: defaultException)
 
-    override val arrayOrNull: List<FluidJson>? get() = wrapped?.arrayOrNull
+    override val arrayOrNull: List<FluidJson>? get() = orNull?.arrayOrNull
     override val array: List<FluidJson>
-        get() = wrapped?.array ?: throwError(pendingException?.invoke() ?: defaultException)
+        get() = wrapped.value?.array ?: throwError(pendingException?.invoke() ?: defaultException)
 
-    override val objOrNull: Map<String, FluidJson>? get() = wrapped?.objOrNull
+    override val objOrNull: Map<String, FluidJson>? get() = orNull?.objOrNull
     override val obj: Map<String, FluidJson>
-        get() = wrapped?.obj ?: throwError(pendingException?.invoke() ?: defaultException)
+        get() = wrapped.value?.obj ?: throwError(pendingException?.invoke() ?: defaultException)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other is JsonEmptyElement) {
-            return this.wrapped == other.wrapped
+            return this.wrapped.value == other.wrapped.value
         }
         if (other is JsonObjectElement || other is JsonArrayElement) {
-            return this.wrapped == other
+            return this.wrapped.value == other
         }
         return false
     }
 
     override fun hashCode(): Int {
-        return wrapped?.hashCode() ?: 0
+        return wrapped.value?.hashCode() ?: 0
     }
 }

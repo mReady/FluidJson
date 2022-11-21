@@ -6,9 +6,9 @@ import kotlin.test.asserter
 
 const val PATH_ROOT = "[json root]"
 
-inline fun assertFailsOn(vararg path: String, block: () -> Unit) {
+inline fun assertFailsOn(path: String, block: () -> Unit) {
     val e = assertFailsWith(FluidJsonException::class, null, block)
-    assertEquals(path.joinToString(" > "), e.path.toString())
+    assertEquals(path, e.path.toString())
 }
 
 inline fun assetSucceeds(block: () -> Unit) {

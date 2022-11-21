@@ -10,32 +10,6 @@ open class JsonTypesTests {
     open val adapter: JsonAdapter = KotlinxJsonAdapter()
 
     @Test
-    fun emptyJson() {
-        val json = FluidJson()
-
-        assertTrue { json is JsonEmptyElement }
-        assertEquals(true, json.isNull)
-        assertEquals(null, json.orNull)
-
-        assertEquals(0, json.size)
-
-        assertEquals(null, json.stringOrNull)
-        assertFailsOn(PATH_ROOT) { json.string }
-
-        assertEquals(null, json.intOrNull)
-        assertFailsOn(PATH_ROOT) { json.int }
-
-        assertEquals(null, json.longOrNull)
-        assertFailsOn(PATH_ROOT) { json.long }
-
-        assertEquals(null, json.doubleOrNull)
-        assertFailsOn(PATH_ROOT) { json.double }
-
-        assertEquals(null, json.boolOrNull)
-        assertFailsOn(PATH_ROOT) { json.bool }
-    }
-
-    @Test
     fun nullJson() {
         val json = FluidJson.wrap(null)
 
@@ -43,24 +17,24 @@ open class JsonTypesTests {
         assertEquals(true, json.isNull)
         assertEquals(null, json.orNull)
 
-        assertFailsOn(PATH_ROOT)  { json.size }
+        assertFailsOn("$")  { json.size }
         assertTrue { json["test"] is JsonErrorElement }
         assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(null, json.stringOrNull)
-        assertFailsOn(PATH_ROOT) { json.string }
+        assertFailsOn("$") { json.string }
 
         assertEquals(null, json.intOrNull)
-        assertFailsOn(PATH_ROOT) { json.int }
+        assertFailsOn("$") { json.int }
 
         assertEquals(null, json.longOrNull)
-        assertFailsOn(PATH_ROOT) { json.long }
+        assertFailsOn("$") { json.long }
 
         assertEquals(null, json.doubleOrNull)
-        assertFailsOn(PATH_ROOT) { json.double }
+        assertFailsOn("$") { json.double }
 
         assertEquals(null, json.boolOrNull)
-        assertFailsOn(PATH_ROOT) { json.bool }
+        assertFailsOn("$") { json.bool }
     }
 
     @Test
@@ -71,24 +45,24 @@ open class JsonTypesTests {
         assertEquals(true, json.isNull)
         assertEquals(null, json.orNull)
 
-        assertFailsOn(PATH_ROOT)  { json.size }
+        assertFailsOn("$")  { json.size }
         assertTrue { json["test"] is JsonErrorElement }
         assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(null, json.stringOrNull)
-        assertFailsOn(PATH_ROOT) { json.string }
+        assertFailsOn("$") { json.string }
 
         assertEquals(null, json.intOrNull)
-        assertFailsOn(PATH_ROOT) { json.int }
+        assertFailsOn("$") { json.int }
 
         assertEquals(null, json.longOrNull)
-        assertFailsOn(PATH_ROOT) { json.long }
+        assertFailsOn("$") { json.long }
 
         assertEquals(null, json.doubleOrNull)
-        assertFailsOn(PATH_ROOT) { json.double }
+        assertFailsOn("$") { json.double }
 
         assertEquals(null, json.boolOrNull)
-        assertFailsOn(PATH_ROOT) { json.bool }
+        assertFailsOn("$") { json.bool }
     }
 
     @Test
@@ -100,7 +74,7 @@ open class JsonTypesTests {
         assertEquals(false, json.isNull)
         assertEquals(json, json.orNull)
 
-        assertFailsOn(PATH_ROOT)  { json.size }
+        assertFailsOn("$")  { json.size }
         assertTrue { json["test"] is JsonErrorElement }
         assertTrue { json[0] is JsonErrorElement }
 
@@ -108,16 +82,16 @@ open class JsonTypesTests {
         assertEquals(string, json.string)
 
         assertEquals(null, json.intOrNull)
-        assertFailsOn(PATH_ROOT) { json.int }
+        assertFailsOn("$") { json.int }
 
         assertEquals(null, json.longOrNull)
-        assertFailsOn(PATH_ROOT) { json.long }
+        assertFailsOn("$") { json.long }
 
         assertEquals(null, json.doubleOrNull)
-        assertFailsOn(PATH_ROOT) { json.double }
+        assertFailsOn("$") { json.double }
 
         assertEquals(null, json.boolOrNull)
-        assertFailsOn(PATH_ROOT) { json.bool }
+        assertFailsOn("$") { json.bool }
     }
 
     @Test
@@ -129,12 +103,12 @@ open class JsonTypesTests {
         assertEquals(false, json.isNull)
         assertEquals(json, json.orNull)
 
-        assertFailsOn(PATH_ROOT)  { json.size }
+        assertFailsOn("$")  { json.size }
         assertTrue { json["test"] is JsonErrorElement }
         assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(null, json.stringOrNull)
-        assertFailsOn(PATH_ROOT) { json.string }
+        assertFailsOn("$") { json.string }
 
         assertEquals(1, json.intOrNull)
         assertEquals(1, json.int)
@@ -146,7 +120,7 @@ open class JsonTypesTests {
         assertEquals(1.0, json.double)
 
         assertEquals(null, json.boolOrNull)
-        assertFailsOn(PATH_ROOT) { json.bool }
+        assertFailsOn("$") { json.bool }
     }
 
     @Test
@@ -158,12 +132,12 @@ open class JsonTypesTests {
         assertEquals(false, json.isNull)
         assertEquals(json, json.orNull)
 
-        assertFailsOn(PATH_ROOT)  { json.size }
+        assertFailsOn("$")  { json.size }
         assertTrue { json["test"] is JsonErrorElement }
         assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(null, json.stringOrNull)
-        assertFailsOn(PATH_ROOT) { json.string }
+        assertFailsOn("$") { json.string }
 
         assertEquals(1, json.intOrNull)
         assertEquals(1, json.int)
@@ -175,7 +149,7 @@ open class JsonTypesTests {
         assertEquals(1.0, json.double)
 
         assertEquals(null, json.boolOrNull)
-        assertFailsOn(PATH_ROOT) { json.bool }
+        assertFailsOn("$") { json.bool }
     }
 
     @Test
@@ -187,24 +161,24 @@ open class JsonTypesTests {
         assertEquals(false, json.isNull)
         assertEquals(json, json.orNull)
 
-        assertFailsOn(PATH_ROOT)  { json.size }
+        assertFailsOn("$")  { json.size }
         assertTrue { json["test"] is JsonErrorElement }
         assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(null, json.stringOrNull)
-        assertFailsOn(PATH_ROOT) { json.string }
+        assertFailsOn("$") { json.string }
 
         assertEquals(null, json.intOrNull)
-        assertFailsOn(PATH_ROOT) { json.int }
+        assertFailsOn("$") { json.int }
 
         assertEquals(null, json.longOrNull)
-        assertFailsOn(PATH_ROOT) { json.long }
+        assertFailsOn("$") { json.long }
 
         assertEquals(1.0, json.doubleOrNull)
         assertEquals(1.0, json.double)
 
         assertEquals(null, json.boolOrNull)
-        assertFailsOn(PATH_ROOT) { json.bool }
+        assertFailsOn("$") { json.bool }
     }
 
     @Test
@@ -221,19 +195,19 @@ open class JsonTypesTests {
         assertTrue { json[0] is JsonErrorElement }
 
         assertEquals(null, json.stringOrNull)
-        assertFailsOn(PATH_ROOT) { json.string }
+        assertFailsOn("$") { json.string }
 
         assertEquals(null, json.intOrNull)
-        assertFailsOn(PATH_ROOT) { json.int }
+        assertFailsOn("$") { json.int }
 
         assertEquals(null, json.longOrNull)
-        assertFailsOn(PATH_ROOT) { json.long }
+        assertFailsOn("$") { json.long }
 
         assertEquals(null, json.doubleOrNull)
-        assertFailsOn(PATH_ROOT) { json.double }
+        assertFailsOn("$") { json.double }
 
         assertEquals(null, json.boolOrNull)
-        assertFailsOn(PATH_ROOT) { json.bool }
+        assertFailsOn("$") { json.bool }
     }
 
     @Test
@@ -250,18 +224,18 @@ open class JsonTypesTests {
         assertTrue { json[0] is JsonEmptyElement }
 
         assertEquals(null, json.stringOrNull)
-        assertFailsOn(PATH_ROOT) { json.string }
+        assertFailsOn("$") { json.string }
 
         assertEquals(null, json.intOrNull)
-        assertFailsOn(PATH_ROOT) { json.int }
+        assertFailsOn("$") { json.int }
 
         assertEquals(null, json.longOrNull)
-        assertFailsOn(PATH_ROOT) { json.long }
+        assertFailsOn("$") { json.long }
 
         assertEquals(null, json.doubleOrNull)
-        assertFailsOn(PATH_ROOT) { json.double }
+        assertFailsOn("$") { json.double }
 
         assertEquals(null, json.boolOrNull)
-        assertFailsOn(PATH_ROOT) { json.bool }
+        assertFailsOn("$") { json.bool }
     }
 }

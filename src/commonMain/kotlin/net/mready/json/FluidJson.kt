@@ -33,7 +33,7 @@ abstract class FluidJson internal constructor(
         }
 
         /**
-         * Parse the given [string] using the specified [adapter].
+         * Parse the given [string] using the default adapter.
          *
          * @throws [JsonParseException] if the given [string] is not a valid JSON
          */
@@ -64,7 +64,6 @@ abstract class FluidJson internal constructor(
         override fun equals(other: Any?): Boolean {
             // Setters and DSLs will make copies of elements if we don't override equals
             // but bad things can happen if the default adapter is switched after element instances were created
-            // TODO: should setting the default adapter be prohibited after it's first used?
             return other == jsonAdapter
         }
     }
@@ -248,6 +247,13 @@ abstract class FluidJson internal constructor(
      */
     fun toJsonString(): String {
         return adapter.stringify(this)
+    }
+
+    /**
+     * Constructs and returns the corresponding JSON string of this json tree.
+     */
+    override fun toString(): String {
+        return toJsonString()
     }
 
     private inline fun <reified T> T.asJson(path: JsonPath): FluidJson {
@@ -441,7 +447,7 @@ inline fun <reified T : Any?> FluidJson.decodeOrNull(): T? {
         is JsonArrayElement, is JsonObjectElement, is JsonPrimitiveElement -> runCatching {
             adapter.fromJson<T>(this, typeOf<T>())
         }.getOrNull()
-        is JsonEmptyElement -> when (val wrapped = wrapped) {
+        is JsonEmptyElement -> when (val wrapped = wrapped()) {
             null -> null
             else -> runCatching { adapter.fromJson<T>(wrapped, typeOf<T>()) }.getOrNull()
         }
@@ -469,7 +475,7 @@ inline fun <reified T : Any?> FluidJson.decode(): T {
         is JsonPrimitiveElement
         -> adapter.fromJson<T>(this, typeOf<T>())
 
-        is JsonEmptyElement -> when (val wrapped = wrapped) {
+        is JsonEmptyElement -> when (val wrapped = wrapped()) {
             null -> null
             else -> adapter.fromJson<T>(wrapped, typeOf<T>())
         }

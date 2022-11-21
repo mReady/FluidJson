@@ -41,7 +41,7 @@ private fun toJsonElement(value: FluidJson): KJsonElement {
         is JsonArrayElement -> KJsonArray(value.content.map {
             toJsonElement(it)
         })
-        is JsonEmptyElement -> value.wrapped?.let {
+        is JsonEmptyElement -> value.wrapped()?.let {
             toJsonElement(it)
         } ?: KJsonNull
         is JsonRefElement -> value.select<Any, KJsonElement>(
@@ -108,6 +108,7 @@ object FluidJsonSerialization : SerializationStrategy<FluidJson> {
     override fun serialize(encoder: Encoder, value: FluidJson) {
         if (value !is JsonElement) throw AssertionError()
         when (value) {
+            is JsonErrorElement -> value.throwError()
             is JsonPrimitiveElement -> encoder.encodeSerializableValue(JsonPrimitiveSerializer, value)
             is JsonObjectElement -> encoder.encodeSerializableValue(JsonObjectSerializer, value)
             is JsonArrayElement -> encoder.encodeSerializableValue(JsonArraySerializer, value)
@@ -122,7 +123,7 @@ object FluidJsonSerialization : SerializationStrategy<FluidJson> {
                     serialize(encoder, it)
                 }
             )
-            is JsonEmptyElement -> value.wrapped?.let {
+            is JsonEmptyElement -> value.wrapped()?.let {
                 serialize(encoder, it)
             } ?: serialize(
                 encoder,

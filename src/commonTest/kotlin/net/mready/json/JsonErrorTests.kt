@@ -15,13 +15,13 @@ open class JsonErrorTests {
 
         assertEquals(1, json["int"].int)
 
-        assertFailsOn(PATH_ROOT, "int") { json["int"][0].int }
-        assertFailsOn(PATH_ROOT, "int") { json["int"][0] = 1 }
+        assertFailsOn("$['int']") { json["int"][0].int }
+        assertFailsOn("$['int']") { json["int"][0] = 1 }
         assertEquals(true, json["int"][0].isNull)
         assertEquals(null, json["int"][0].orNull)
 
-        assertFailsOn(PATH_ROOT, "int") { json["int"]["a"].int }
-        assertFailsOn(PATH_ROOT, "int") { json["int"]["a"] = 1 }
+        assertFailsOn("$['int']") { json["int"]["a"].int }
+        assertFailsOn("$['int']") { json["int"]["a"] = 1 }
         assertEquals(true, json["int"]["a"].isNull)
         assertEquals(null, json["int"]["a"].orNull)
     }
@@ -33,8 +33,8 @@ open class JsonErrorTests {
             obj["arr"] = jsonArray { }
         }
 
-        assertFailsOn(PATH_ROOT, "obj") { json["obj"].string }
-        assertFailsOn(PATH_ROOT, "arr") { json["arr"].string }
+        assertFailsOn("$['obj']") { json["obj"].string }
+        assertFailsOn("$['arr']") { json["arr"].string }
     }
 
     @Test
@@ -44,10 +44,10 @@ open class JsonErrorTests {
             obj["arr"] = jsonArray { }
         }
 
-        assertFailsOn(PATH_ROOT, "obj") { json["obj"].array }
-        assertFailsOn(PATH_ROOT, "obj") { json["obj"][0].string }
-        assertFailsOn(PATH_ROOT, "arr") { json["arr"].obj }
-        assertFailsOn(PATH_ROOT, "arr") { json["arr"]["a"].string }
+        assertFailsOn("$['obj']") { json["obj"].array }
+        assertFailsOn("$['obj']") { json["obj"][0].string }
+        assertFailsOn("$['arr']") { json["arr"].obj }
+        assertFailsOn("$['arr']") { json["arr"]["a"].string }
     }
 
     @Test
@@ -58,11 +58,11 @@ open class JsonErrorTests {
 
         assertEquals(true, json["null"].isNull)
         assertEquals(null, json["null"].orNull)
-        assertFailsOn(PATH_ROOT, "null") { json["null"].size }
-        assertFailsOn(PATH_ROOT, "null") { json["null"].string }
-        assertFailsOn(PATH_ROOT, "null") { json["null"].int }
-        assertFailsOn(PATH_ROOT, "null") { json["null"].long }
-        assertFailsOn(PATH_ROOT, "null") { json["null"].double }
+        assertFailsOn("$['null']") { json["null"].size }
+        assertFailsOn("$['null']") { json["null"].string }
+        assertFailsOn("$['null']") { json["null"].int }
+        assertFailsOn("$['null']") { json["null"].long }
+        assertFailsOn("$['null']") { json["null"].double }
     }
 
     @Test
@@ -77,10 +77,10 @@ open class JsonErrorTests {
         assertEquals(true, json["null"]["a"].isNull)
         assertEquals(null, json["null"]["a"].orNull)
 
-        assertFailsOn(PATH_ROOT, "null") { json["null"][0].string }
-        assertFailsOn(PATH_ROOT, "null") { json["null"][0][1][2].string }
-        assertFailsOn(PATH_ROOT, "null") { json["null"]["a"].string }
-        assertFailsOn(PATH_ROOT, "null") { json["null"]["a"]["b"]["c"].string }
+        assertFailsOn("$['null']") { json["null"][0].string }
+        assertFailsOn("$['null']") { json["null"][0][1][2].string }
+        assertFailsOn("$['null']") { json["null"]["a"].string }
+        assertFailsOn("$['null']") { json["null"]["a"]["b"]["c"].string }
     }
 
     @Test
@@ -90,10 +90,10 @@ open class JsonErrorTests {
             obj["obj"] = jsonObject {}
         }
 
-        assertFailsOn(PATH_ROOT, "arr") { json["arr"][10].string }
-        assertFailsOn(PATH_ROOT, "arr") { json["arr"][-1] }
-        assertFailsOn(PATH_ROOT, "arr") { json["arr"][-1] = 1 }
-        assertFailsOn(PATH_ROOT, "obj") { json["obj"]["a"].string }
+        assertFailsOn("$['arr']") { json["arr"][10].string }
+        assertFailsOn("$['arr']") { json["arr"][-1] }
+        assertFailsOn("$['arr']") { json["arr"][-1] = 1 }
+        assertFailsOn("$['obj']") { json["obj"]["a"].string }
     }
 
     @Test
@@ -110,19 +110,19 @@ open class JsonErrorTests {
             }
         }
 
-        assertFailsOn(PATH_ROOT, "inner1") {
+        assertFailsOn("$['inner1']") {
             json["inner1"]["invalid"].string
         }
-        assertFailsOn(PATH_ROOT, "inner1", "arr1") {
+        assertFailsOn("$['inner1']['arr1']") {
             json["inner1"]["arr1"][1].string
         }
-        assertFailsOn(PATH_ROOT, "inner1", "arr1", "[0]") {
+        assertFailsOn("$['inner1']['arr1'][0]") {
             json["inner1"]["arr1"][0]["invalid"].string
         }
-        assertFailsOn(PATH_ROOT, "inner1", "arr1", "[0]", "inner2") {
+        assertFailsOn("$['inner1']['arr1'][0]['inner2']") {
             json["inner1"]["arr1"][0]["inner2"][0].string
         }
-        assertFailsOn(PATH_ROOT, "inner1", "arr1", "[0]", "inner2", "arr2") {
+        assertFailsOn("$['inner1']['arr1'][0]['inner2']['arr2']") {
             json["inner1"]["arr1"][0]["inner2"]["arr2"][0].string
         }
     }

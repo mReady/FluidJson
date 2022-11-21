@@ -17,7 +17,7 @@ class JsonObjectElement(
         adapter = adapter
     )
 
-    override val size: Int get() = content.size
+    override val size: Int get() = objOrNull.size
 
     override operator fun get(key: String): FluidJson {
         return content.getOrPut(key) {
@@ -36,16 +36,22 @@ class JsonObjectElement(
         content.remove(key)
     }
 
-    override val objOrNull: Map<String, FluidJson> get() = content
+    override val objOrNull: Map<String, FluidJson> get() = content.filterValues {
+        if (it is JsonEmptyElement) {
+            it.wrapped() != null
+        } else {
+            true
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
 
         if (other is JsonObjectElement) {
-            return this.content == other.content
+            return this.objOrNull == other.objOrNull
         }
         if (other is JsonEmptyElement) {
-            return this == other.wrapped
+            return this == other.wrapped()
         }
         return false
     }

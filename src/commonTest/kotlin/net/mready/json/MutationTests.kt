@@ -58,8 +58,8 @@ open class MutationTests {
 
         assertNull(json["obj"].arrayOrNull)
         assertNull(json["obj"]["inner1"].arrayOrNull)
-        assertFailsOn(PATH_ROOT, "obj") { json["obj"].array }
-        assertFailsOn(PATH_ROOT, "obj", "inner1") { json["obj"]["inner1"].array }
+        assertFailsOn("$['obj']") { json["obj"].array }
+        assertFailsOn("$['obj']['inner1']") { json["obj"]["inner1"].array }
 
         assertEquals("""{"obj":{"inner1":{"inner2":{"value":1}}}}""", adapter.stringify(json))
     }
@@ -77,8 +77,8 @@ open class MutationTests {
 
         assertNull(json["arr"].objOrNull)
         assertNull(json["arr"][0].objOrNull)
-        assertFailsOn(PATH_ROOT, "arr") { json["arr"].obj }
-        assertFailsOn(PATH_ROOT, "arr", "[0]") { json["arr"][0].obj }
+        assertFailsOn("$['arr']") { json["arr"].obj }
+        assertFailsOn("$['arr'][0]") { json["arr"][0].obj }
 
         assertEquals("""{"arr":[[1]]}""", adapter.stringify(json))
     }
@@ -105,8 +105,8 @@ open class MutationTests {
             obj["null"] = null
         }
 
-        assertFailsOn(PATH_ROOT, "null") { json["null"]["value"] = 1 }
-        assertFailsOn(PATH_ROOT, "null") { json["null"][0] = 1 }
+        assertFailsOn("$['null']") { json["null"]["value"] = 1 }
+        assertFailsOn("$['null']") { json["null"][0] = 1 }
     }
 
     @Test
@@ -119,8 +119,8 @@ open class MutationTests {
         json["obj"]["inner"] = inner
         json["arr"][0] = inner
 
-        assertFailsOn(PATH_ROOT, "obj", "inner", "value") { json["obj"]["inner"]["value"].bool }
-        assertFailsOn(PATH_ROOT, "arr", "[0]", "value") { json["arr"][0]["value"].bool }
+        assertFailsOn("$['obj']['inner']['value']") { json["obj"]["inner"]["value"].bool }
+        assertFailsOn("$['arr'][0]['value']") { json["arr"][0]["value"].bool }
 
         assertEquals("""{"obj":{"inner":{"value":1}},"arr":[{"value":1}]}""", adapter.stringify(json))
     }

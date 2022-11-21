@@ -1,9 +1,9 @@
 @file:Suppress("PropertyName")
 
 plugins {
-    kotlin("multiplatform") version "1.5.0"
-    kotlin("plugin.serialization") version "1.5.0"
-    id("kotlinx-atomicfu") version "0.16.1"
+    kotlin("multiplatform") version "1.7.21"
+    kotlin("plugin.serialization") version "1.7.21"
+    id("kotlinx-atomicfu") version "0.18.5"
     id("maven-publish")
     id("signing")
 }
@@ -21,8 +21,8 @@ repositories {
 kotlin {
     sourceSets.all {
         languageSettings.apply {
-            useExperimentalAnnotation("kotlin.RequiresOptIn")
-            useExperimentalAnnotation("kotlin.ExperimentalStdlibApi")
+            optIn("kotlin.RequiresOptIn")
+            optIn("kotlin.ExperimentalStdlibApi")
         }
     }
 
@@ -46,7 +46,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
             }
         }
 

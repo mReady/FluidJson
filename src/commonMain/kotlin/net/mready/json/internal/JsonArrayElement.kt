@@ -69,7 +69,7 @@ class JsonArrayElement(
             return this.content == other.content
         }
         if (other is JsonEmptyElement) {
-            return this == other.wrapped
+            return this == other.wrapped()
         }
         return false
     }
