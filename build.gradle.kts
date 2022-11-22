@@ -34,19 +34,20 @@ kotlin {
         }
     }
 
+    iosArm64()
+    iosSimulatorArm64()
+    iosX64()
+
 //    js(IR) {
 //        browser()
 //        nodejs()
 //    }
 
-    ios {
-    }
-
-
     sourceSets {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+                implementation("org.jetbrains.kotlinx:atomicfu:0.18.5")
             }
         }
 
