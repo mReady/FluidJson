@@ -1,11 +1,13 @@
 @file:Suppress("PropertyName")
 
+
 plugins {
-    kotlin("multiplatform") version "1.7.21"
-    kotlin("plugin.serialization") version "1.7.21"
-    id("kotlinx-atomicfu") version "0.18.5"
-    id("maven-publish")
-    id("signing")
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.vaniktek.mavem.publish)
+    alias(libs.plugins.jetbrains.dokka)
+    alias(libs.plugins.kotlin.atomicfu)
+    //id("maven-publish")
 }
 
 val VERSION_NAME: String by project
@@ -14,26 +16,11 @@ group = "net.mready.json"
 version = VERSION_NAME
 
 repositories {
-    maven { setUrl("https://dl.bintray.com/kotlin/kotlin-eap") }
     mavenCentral()
 }
 
 kotlin {
-    sourceSets.all {
-        languageSettings.apply {
-            optIn("kotlin.RequiresOptIn")
-            optIn("kotlin.ExperimentalStdlibApi")
-        }
-    }
-
-    jvm {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "1.8"
-            }
-        }
-    }
-
+    jvm()
     iosArm64()
     iosSimulatorArm64()
     iosX64()
@@ -44,41 +31,30 @@ kotlin {
 //    }
 
     sourceSets {
-        val commonMain by getting {
+        commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
-                implementation("org.jetbrains.kotlinx:atomicfu:0.18.5")
+                implementation(libs.kotlinx.serialization.json)
             }
         }
 
-        val commonTest by getting {
+        commonTest {
             dependencies {
                 api(kotlin("test-common"))
                 api(kotlin("test-annotations-common"))
             }
         }
 
-        val jvmMain by getting { }
-
-        val jvmTest by getting {
+        jvmTest {
             dependencies {
-                implementation("junit:junit:4.12")
-                implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.2")
-                implementation(kotlin("reflect"))
-                implementation(kotlin("test-junit"))
+                dependencies {
+                    implementation("junit:junit:4.12")
+                    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.2")
+                    implementation(kotlin("reflect"))
+                    implementation(kotlin("test-junit"))
+                }
             }
         }
-
-//        val jsMain by getting {
-//        }
-//
-//        val jsTest by getting {
-//        }
     }
-}
-
-val javadocJar by tasks.registering(Jar::class) {
-    archiveClassifier.set("javadoc")
 }
 
 val isReleaseBuild: Boolean get() = !VERSION_NAME.contains("SNAPSHOT")
@@ -88,6 +64,7 @@ val POM_NAME: String by project
 val POM_DESCRIPTION: String by project
 val POM_DEVELOPER_ID: String by project
 val POM_DEVELOPER_NAME: String by project
+val POM_DEVELOPER_EMAIL: String by project
 val POM_DEVELOPER_URL: String by project
 val POM_URL: String by project
 val POM_SCM_URL: String by project
@@ -111,33 +88,39 @@ val SONATYPE_NEXUS_USERNAME: String
 val SONATYPE_NEXUS_PASSWORD: String
     get() = findProperty("mavenCentralRepositoryPassword") as String? ?: ""
 
-publishing {
-    publications.withType<MavenPublication> {
-        artifactId = artifactId.toLowerCase()
+mavenPublishing {
+    //For publishing to mavenLocal comment the next line, uncomment the id("maven-publish") plugin
+    // sync with gradle and run the task publishToMavenLocal
+    signAllPublications()
 
-        artifact(javadocJar.get())
-        pom {
-            this.description.set(POM_DESCRIPTION)
-            this.name.set(POM_NAME)
-            this.url.set(POM_URL)
-            licenses {
-                license {
-                    this.name.set(POM_LICENCE_NAME)
-                    this.url.set(POM_LICENCE_URL)
-                    this.distribution.set(POM_LICENCE_DIST)
-                }
+    publishToMavenCentral()
+    pom {
+        name = POM_NAME
+        description = POM_DESCRIPTION
+        url = POM_URL
+
+        licenses {
+            license {
+                name = POM_LICENCE_NAME
+                url = POM_LICENCE_URL
+                distribution = POM_LICENCE_DIST
             }
-            scm {
-                this.url.set(POM_SCM_URL)
-                this.connection.set(POM_SCM_CONNECTION)
-                this.developerConnection.set(POM_SCM_DEV_CONNECTION)
-            }
-            developers {
-                developer {
-                    this.id.set(POM_DEVELOPER_ID)
-                    this.name.set(POM_DEVELOPER_NAME)
-                    this.url.set(POM_DEVELOPER_URL)
-                }
+        }
+
+        scm {
+            url = POM_SCM_URL
+            connection = POM_SCM_CONNECTION
+            developerConnection = POM_SCM_DEV_CONNECTION
+        }
+
+        developers {
+            developer {
+                id = POM_DEVELOPER_ID
+                name = POM_DEVELOPER_NAME
+                email = POM_DEVELOPER_EMAIL
+                url = POM_DEVELOPER_URL
+                organization = POM_DEVELOPER_NAME
+                organizationUrl = POM_DEVELOPER_URL
             }
         }
     }
@@ -152,9 +135,4 @@ publishing {
             }
         }
     }
-}
-
-signing {
-    setRequired { isReleaseBuild && gradle.taskGraph.hasTask("uploadArchives") }
-    sign(publishing.publications)
 }
