@@ -8,7 +8,10 @@ import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import net.mready.json.*
+import net.mready.json.FluidJson
+import net.mready.json.Json
+import net.mready.json.JsonAdapter
+import net.mready.json.JsonParseException
 import net.mready.json.internal.*
 import kotlin.reflect.KType
 import kotlin.reflect.javaType
@@ -53,6 +56,7 @@ object JacksonJsonAdapter : JsonAdapter() {
         return parse(objectMapper.writeValueAsString(value))
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun <T> decodeObject(string: String, type: KType): T {
         return objectMapper.readValue(string, objectMapper.constructType(type.javaType))
     }
@@ -78,6 +82,7 @@ object JsonElementSerializer : JsonSerializer<Json>() {
                 value.isNumber() -> value.longOrNull?.let { gen.writeNumber(it) } ?: gen.writeNumber(value.double)
                 else -> gen.writeString(value.string)
             }
+
             is JsonObjectElement -> {
                 gen.writeStartObject()
                 value.obj.forEach {
@@ -86,6 +91,7 @@ object JsonElementSerializer : JsonSerializer<Json>() {
                 }
                 gen.writeEndObject()
             }
+
             is JsonArrayElement -> {
                 gen.writeStartArray()
                 value.array.forEach {
@@ -93,6 +99,7 @@ object JsonElementSerializer : JsonSerializer<Json>() {
                 }
                 gen.writeEndArray()
             }
+
             is JsonRefElement -> value.select<Any, Unit>(
                 valueTransform = {
                     findSerializer(serializers, value.type, it)
@@ -102,9 +109,11 @@ object JsonElementSerializer : JsonSerializer<Json>() {
                     serialize(it, gen, serializers)
                 }
             )
+
             is JsonEmptyElement -> value.wrapped()?.let {
                 serialize(it, gen, serializers)
             } ?: gen.writeNull()
+
             is JsonErrorElement -> value.throwError()
         }
     }
@@ -114,6 +123,7 @@ object JsonElementSerializer : JsonSerializer<Json>() {
         return serializers.findValueSerializer(value::class.java)
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private fun findSerializer(serializers: SerializerProvider, type: KType, value: Any): JsonSerializer<Any?> {
         return if (type.classifier == Any::class) {
             findClassSerializer(serializers, value)
@@ -138,24 +148,28 @@ class JsonElementDeserializer(private val adapter: JsonAdapter) : JsonDeserializ
                 path = path,
                 adapter = adapter
             )
+
             JsonToken.VALUE_NUMBER_INT -> JsonPrimitiveElement(
                 p.longValue.toString(),
                 JsonPrimitiveElement.Type.NUMBER,
                 path = path,
                 adapter = adapter
             )
+
             JsonToken.VALUE_NUMBER_FLOAT -> JsonPrimitiveElement(
                 p.doubleValue.toString(),
                 JsonPrimitiveElement.Type.NUMBER,
                 path = path,
                 adapter = adapter
             )
+
             JsonToken.VALUE_TRUE, JsonToken.VALUE_FALSE -> JsonPrimitiveElement(
                 p.booleanValue.toString(),
                 JsonPrimitiveElement.Type.BOOLEAN,
                 path = path,
                 adapter = adapter
             )
+
             JsonToken.START_ARRAY -> {
                 val items = mutableListOf<Json>()
                 var t = p.nextToken()
@@ -167,6 +181,7 @@ class JsonElementDeserializer(private val adapter: JsonAdapter) : JsonDeserializ
                 }
                 JsonArrayElement(items, path = path, adapter = adapter)
             }
+
             JsonToken.START_OBJECT -> {
                 val items = mutableMapOf<String, Json>()
                 var t = p.nextToken()
@@ -178,6 +193,7 @@ class JsonElementDeserializer(private val adapter: JsonAdapter) : JsonDeserializ
                 }
                 JsonObjectElement(items, path = path, adapter = adapter)
             }
+
             else -> throw IllegalStateException("Unexpected token $token")
         }
     }

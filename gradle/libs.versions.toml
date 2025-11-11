@@ -1,0 +1,18 @@
+[versions]
+dokka = "2.1.0"
+kotlin = "2.2.21"
+vanitek-maven-publish = "0.34.0"
+kotlinx-serialization = "1.9.0"
+atomicfu = "0.29.0"
+
+
+[libraries]
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+
+[plugins]
+jetbrains-dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+vaniktek-mavem-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanitek-maven-publish" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-atomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "atomicfu" }
+

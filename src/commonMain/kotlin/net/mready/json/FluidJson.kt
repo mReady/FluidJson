@@ -444,9 +444,11 @@ inline fun <reified T : Any?> FluidJson.decodeOrNull(): T? {
                 runCatching { adapter.fromJson<T>(it, decodeType) }.getOrNull()
             }
         )
+
         is JsonArrayElement, is JsonObjectElement, is JsonPrimitiveElement -> runCatching {
             adapter.fromJson<T>(this, typeOf<T>())
         }.getOrNull()
+
         is JsonEmptyElement -> when (val wrapped = wrapped()) {
             null -> null
             else -> runCatching { adapter.fromJson<T>(wrapped, typeOf<T>()) }.getOrNull()
@@ -470,10 +472,11 @@ inline fun <reified T : Any?> FluidJson.decode(): T {
                 }
             )
         }
+
         is JsonArrayElement,
         is JsonObjectElement,
         is JsonPrimitiveElement
-        -> adapter.fromJson<T>(this, typeOf<T>())
+            -> adapter.fromJson<T>(this, typeOf<T>())
 
         is JsonEmptyElement -> when (val wrapped = wrapped()) {
             null -> null
